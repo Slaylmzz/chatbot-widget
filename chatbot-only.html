@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot Widget</title>
+    <link rel="stylesheet" href="chatbot-only.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+      <!-- Chatbot Toggle Button -->
+      <div class="chatbot-toggle" id="chatbotToggle">
+        <i class="fas fa-comments"></i>
+        <span class="notification-badge" id="notificationBadge">1</span>
+      </div>
+
+      <!-- Chatbot Container -->
+      <div class="chatbot-container" id="chatbotContainer">
+        <!-- Chatbot Header -->
+        <div class="chatbot-header">
+          <div class="chatbot-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="chatbot-info">
+            <h4>Yardım Asistanı</h4>
+            <span class="status">Çevrimiçi</span>
+          </div>
+          <button class="close-btn" id="closeChatbot">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot-message">
+            <div class="message-content">
+              <p>Merhaba! Size nasıl yardımcı olabilirim? 😊</p>
+            </div>
+            <div class="message-time">Şimdi</div>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Mesajınızı yazın..."
+              maxlength="500"
+            />
+            <button class="send-btn" id="sendMessage">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+          <div class="quick-replies" id="quickReplies">
+            <button
+              class="quick-reply"
+              data-message="Ürünleriniz hakkında bilgi almak istiyorum"
+            >
+              Ürünler
+            </button>
+            <button
+              class="quick-reply"
+              data-message="Fiyat bilgisi alabilir miyim?"
+            >
+              Fiyat
+            </button>
+            <button
+              class="quick-reply"
+              data-message="İletişim bilgilerinizi paylaşır mısınız?"
+            >
+              İletişim
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="chatbot-only.js"></script>
+  </body>
+</html>

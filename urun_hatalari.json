@@ -1,0 +1,178 @@
+[
+  {
+    "st542_kodu": "ER00",
+    "carel_kodu": "AL003",
+    "plc_ekran": "Acil Stop Alarmı",
+    "aciklama": "Faz Hatası (Phase Failure)",
+    "sebep": "Şebekede faz kaybı veya dengesizlik",
+    "yorum": [
+      "Resetleyin.",
+      "Acil Stop Butonunu kontrol edin, basılı olmadığından emin olun.",
+      "EMG rölesinin arızalı olup olmadığını kontrol edin.",
+      "Faz koruma rölesi kontrol edilmeli.",
+      "Hata devam ediyorsa ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER01 / ER02",
+    "carel_kodu": "AL032",
+    "plc_ekran": "Yüksek basınç Alarmı",
+    "aciklama": "Yüksek Basınç",
+    "sebep": "Kondenser kirli, fan arızalı, ortam sıcaklığı yüksek",
+    "yorum": [
+      "Resetleyin.",
+      "Tüm chiller kapaklarını kapatın.",
+      "Kondenser yüzeylerini sil ve temizleyin.",
+      "Sistemdeki tüm fanların doğru çalıştığını kontrol edin.",
+      "Hata devam ediyorsa ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER05 / ER06",
+    "carel_kodu": "AL30",
+    "plc_ekran": "Alçak Basınç Alarmı",
+    "aciklama": "Düşük Emme Basıncı",
+    "sebep": "Genleşme valfi arızalı, düşük ortam sıcaklığı, su akışı yetersiz",
+    "yorum": [
+      "Resetleyin.",
+      "Su tesisatındaki tüm vanaları açarak su akışını arttırın.",
+      "Su hattı havası alın.",
+      "Pislik Tutucu temizliğini yapın.",
+      "Tıkanıklık kontrol edilmeli.",
+      "Hata devam ediyorsa ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER10 / ER11",
+    "carel_kodu": "AL22",
+    "plc_ekran": "Kompresör Aşırı Yük",
+    "aciklama": "Kompresör Aşırı Yük",
+    "sebep": "Kompresör fazla akım çekiyor (FLA üzerinde)",
+    "yorum": [
+      "Resetleyin",
+      "Kompresör kontaktörünü kontrol edin.",
+      "Motor sargılarını ölçün.",
+      "Pislik Tutucu temizliğini yapın.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "",
+    "carel_kodu": "AL85",
+    "plc_ekran": "Yağ Switch Hatası",
+    "aciklama": "Yağ Seviye Hatası",
+    "sebep": "Kompresör yağ seviyesi düşük",
+    "yorum": [
+      "Resetleyin",
+      "Su tesisatındaki tüm vanaları açarak su akışını arttırın.",
+      "Su hattı havası alın.",
+      "Pislik Tutucu temizliğini yapın.",
+      "Tıkanıklık kontrol edilmeli.",
+      "Yağ Seviye Switchinin doğru çalıştığına emin olun.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER20",
+    "carel_kodu": "AL39",
+    "plc_ekran": "Su Akış Hatası",
+    "aciklama": "Su Akış Hatası (EX)",
+    "sebep": "Yetersiz ya da hiç su akışı yok",
+    "yorum": [
+      "Resetleyin",
+      "Su tesisatındaki tüm vanaları açarak su akışını arttırın.",
+      "Su hattı havası alın.",
+      "Pislik Tutucu temizliğini yapın.",
+      "Tıkanıklık kontrol edilmeli.",
+      "Flow Switchinin doğru çalıştığına emin olun.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER21",
+    "carel_kodu": "AL43",
+    "plc_ekran": "Pompa Aşırı Yük",
+    "aciklama": "Pompa Termik Hatası",
+    "sebep": "Pompa fazla akım çekiyor.",
+    "yorum": [
+      "Resetleyin",
+      "Pompa kontaktörünü kontrol edin.",
+      "Pislik Tutucu temizliğini yapın.",
+      "Pompanın vanalarının açık olup, doğru basınç altında çalıştığına emin olun.",
+      "Pompa milinin sıkışık olup olmadığını kontrol edin.",
+      "Motor sargılarını ölçün.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER30",
+    "carel_kodu": "AL34",
+    "plc_ekran": "Donma Termostat Hatası",
+    "aciklama": "Donma Termostat Hatası",
+    "sebep": "Su debisi yetersiz, termostat ayarı çok düşük",
+    "yorum": [
+      "Resetleyin.",
+      "Suyun gerçek sıcaklığının 5 derecenin alltında olup olmadığını kontrol edin.",
+      "Su sıcaklığı 5 derecenin altında ise suyun sıcaklığını yükseltip 5 derecenin üzerine çıktığında resetleyin.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER35",
+    "carel_kodu": "",
+    "plc_ekran": "Kritik Düşük Sıcaklık",
+    "aciklama": "Yüksek/Düşük Su Sıcaklığı",
+    "sebep": "Su sıcaklığı parametre dışında.",
+    "yorum": [
+      "Resetleyin.",
+      "Suyun gerçek sıcaklığının 35 derecenin üstünde olup olmadığını kontrol edin.",
+      "Su sıcaklığı 35 derecenin üstünde ise suyun sıcaklığını düşürüp 35 derecenin altına indiğinde resetleyin.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER40 / ER41",
+    "carel_kodu": "AL23",
+    "plc_ekran": "Fan Aşırı Yük",
+    "aciklama": "Fan Termik Hatası",
+    "sebep": "Fan fazla akım çekiyor",
+    "yorum": [
+      "Resetleyin.",
+      "Fan kontaktörünü kontrol edin.",
+      "Fanın sıkışık olup olmadığını kontrol edin.",
+      "Motor sargılarını ölçün.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER60 / ER61",
+    "carel_kodu": "AL11",
+    "plc_ekran": "Su Sıcaklık Sensörü Arızası",
+    "aciklama": "Su Sıcaklık Sensörü Arızası",
+    "sebep": "Sensör bozulmuş, bağlantı kopmuş",
+    "yorum": [
+      "Sıcaklık sensörünü değiştirin.",
+      "Hata devam ediyor ise form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER85",
+    "carel_kodu": "AL18",
+    "plc_ekran": "Lütfen Eraco Servisi Arayınız",
+    "aciklama": "Genel Bakım Uyarısı",
+    "sebep": "Bakım zamanı gelmiş",
+    "yorum": [
+      "Sayaç temellidir, sıfırlanmadan önce bakım yapılmalı. Lütfen form doldurup iletişime geçilmesini bekleyin."
+    ]
+  },
+  {
+    "st542_kodu": "ER90",
+    "carel_kodu": "AL02",
+    "plc_ekran": "Alarm Hafıza Hatası",
+    "aciklama": "Alarm Hafıza Hatası",
+    "sebep": "Alarm belleği dolmuş",
+    "yorum": [
+      "Bellek temizlenmezse yeni alarm kaydı yapılmaz. Alarmların kontrolü ve sıfırlanması için Lütfen form doldurup iletişime geçilmesini bekleyin."
+    ]
+  }
+]

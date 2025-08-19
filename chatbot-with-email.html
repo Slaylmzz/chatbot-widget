@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eraco Chatbot - E-posta Doğrulamalı</title>
+    <link rel="stylesheet" href="chatbot-with-email.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+      <!-- Chatbot Toggle Button -->
+      <div class="chatbot-toggle" id="chatbotToggle">
+        <i class="fas fa-comments"></i>
+        <span class="notification-badge" id="notificationBadge">1</span>
+      </div>
+
+      <!-- Chatbot Container -->
+      <div class="chatbot-container" id="chatbotContainer">
+        <!-- Chatbot Header -->
+        <div class="chatbot-header">
+          <div class="chatbot-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="chatbot-info">
+            <h4>Eraco Yardım Asistanı</h4>
+            <span class="status">Çevrimiçi</span>
+          </div>
+          <button class="close-btn" id="closeChatbot">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Email Verification Screen -->
+        <div class="verification-screen" id="verificationScreen">
+          <div class="verification-content">
+            <div class="verification-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h3>E-posta Doğrulaması</h3>
+            <p>Chatbot'u kullanmak için e-posta adresinizi doğrulayın</p>
+
+            <div class="email-form" id="emailForm">
+              <input
+                type="email"
+                id="emailInput"
+                placeholder="E-posta adresinizi girin"
+                required
+              />
+              <button class="send-code-btn" id="sendCodeBtn">
+                <i class="fas fa-paper-plane"></i>
+                Kod Gönder
+              </button>
+            </div>
+
+            <div class="code-form" id="codeForm" style="display: none">
+              <p class="code-instruction">
+                E-posta adresinize gönderilen 6 haneli kodu girin:
+              </p>
+              <div class="code-inputs">
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="0"
+                />
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="1"
+                />
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="2"
+                />
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="3"
+                />
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="4"
+                />
+                <input
+                  type="text"
+                  class="code-input"
+                  maxlength="1"
+                  data-index="5"
+                />
+              </div>
+              <button class="verify-code-btn" id="verifyCodeBtn">
+                <i class="fas fa-check"></i>
+                Doğrula
+              </button>
+              <button class="resend-code-btn" id="resendCodeBtn">
+                <i class="fas fa-redo"></i>
+                Kodu Tekrar Gönder
+              </button>
+            </div>
+
+            <div class="verification-status" id="verificationStatus"></div>
+          </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages" style="display: none">
+          <div class="message bot-message">
+            <div class="message-content">
+              <p>
+                Merhaba! E-posta adresiniz doğrulandı. Size nasıl yardımcı
+                olabilirim? 😊
+              </p>
+            </div>
+            <div class="message-time">Şimdi</div>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div
+          class="chat-input-container"
+          id="chatInputContainer"
+          style="display: none"
+        >
+          <div class="chat-input-wrapper">
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Mesajınızı yazın..."
+              maxlength="500"
+            />
+            <button class="send-btn" id="sendMessage">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+          <div class="quick-replies" id="quickReplies">
+            <button
+              class="quick-reply"
+              data-message="Ürünleriniz hakkında bilgi almak istiyorum"
+            >
+              Ürünler
+            </button>
+            <button
+              class="quick-reply"
+              data-message="Fiyat bilgisi alabilir miyim?"
+            >
+              Fiyat
+            </button>
+            <button
+              class="quick-reply"
+              data-message="İletişim bilgilerinizi paylaşır mısınız?"
+            >
+              İletişim
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="chatbot-with-email.js"></script>
+  </body>
+</html>
