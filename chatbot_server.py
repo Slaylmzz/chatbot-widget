@@ -11,8 +11,24 @@ import uuid
 import json
 from datetime import datetime, timedelta
 
+# OpenAI Assistant API
+import os
+from openai import OpenAI
+
 app = Flask(__name__)
 CORS(app)
+
+# OpenAI config
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+# Dosyadan anahtar geri dönüşü (openai.key)
+if not OPENAI_API_KEY:
+    try:
+        with open('openai.key', 'r', encoding='utf-8') as _f:
+            OPENAI_API_KEY = _f.read().strip()
+    except Exception:
+        OPENAI_API_KEY = ''
+OPENAI_ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID', 'asst_mfvwKHq9IHQycz7HV8ebWeDf')
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # E-posta ayarları - Kullanıcının verdiği bilgiler
 EMAIL_SENDER = "no-reply@eracochillers.com"
@@ -106,8 +122,9 @@ def find_error_entry(query: str):
         return None
 
     q_norm = normalize_text_for_match(query)
-    # Kod araması için alfasayısal sıkılaştırılmış token
-    code_token = re.sub(r'[^a-z0-9]', '', query.lower())
+    # Kullanıcı mesajından kodları çıkar (ER21, AL003, ER 05 gibi boşluklu haller dahil)
+    code_tokens_in_query = [t.lower() for t in re.findall(r'[a-zA-Z]+\s*\d+', query)]
+    code_tokens_in_query = [re.sub(r'\s+', '', t) for t in code_tokens_in_query]
 
     for err in errors:
         st_code_raw = (err.get('st542_kodu') or '').strip()
@@ -117,8 +134,10 @@ def find_error_entry(query: str):
         st_tokens = [t.lower() for t in re.findall(r'[a-zA-Z]+\d+', st_code_raw.replace(' ', ''))]
         carel_tokens = [t.lower() for t in re.findall(r'[a-zA-Z]+\d+', carel_code_raw.replace(' ', ''))]
 
-        if code_token and (code_token in st_tokens or code_token in carel_tokens):
-            return err
+        if code_tokens_in_query:
+            for qtok in code_tokens_in_query:
+                if qtok in st_tokens or qtok in carel_tokens:
+                    return err
 
         # Metin alanlarında esnek eşleme (plc_ekran, aciklama, sebep)
         for field in ['plc_ekran', 'aciklama', 'sebep']:
@@ -365,6 +384,86 @@ def check_user_verification(user_id):
         }
     return None
 
+def is_product_technical_question(message: str) -> bool:
+    """Ürünlerin teknik detaylarına dair soruları tespit eder; bu durumda OpenAI devre dışı kalır.
+    Sadece açık teknik terimler/kodlar tetikler; genel sorular (konum/iletişim vb.) tetiklemez.
+    """
+    text = (message or '').lower()
+    # Hata kodu kalıpları ve teknik anahtarlar
+    code_hit = bool(re.search(r"\b(er\s*\d{2,3}|al\s*\d{2,3})\b", text))
+    hard_keywords = [
+        'yüksek basınç', 'alçak basınç', 'kompresör', 'pompa', 'fan', 'genleşme', 'kondenser',
+        'evaparatör', 'yağ', 'akım', 'sensör', 'parametre', 'alarm', 'termostat', 'flow', 'debisi',
+        'switch', 'valf', 'soğutucu', 'r134', 'r410', 'gaz'
+    ]
+    token_hit = any(k in text for k in hard_keywords)
+    return code_hit or token_hit
+
+def is_low_information_message(message: str) -> bool:
+    """Kullanıcının mesajı anlamı belirsiz/kısa ise True döner."""
+    if not message:
+        return True
+    text = message.strip().lower()
+    if len(text) < 3:
+        return True
+    # Sadece noktalama veya soru imleri
+    if re.fullmatch(r"[\.?!,\-\s]+", text or ""):
+        return True
+    low_tokens = [
+        'bilmiyorum', 'bilmiyom', 'bilmiyom', 'bilmiyem', 'bılemem', 'bilemedim',
+        'emin değilim', 'bence', 'kararsızım', 'yardım', 'bilmiyo', 'ne yapmalıyım',
+    ]
+    return any(tok in text for tok in low_tokens)
+
+
+def ask_openai_assistant(user_message: str) -> str:
+    """OpenAI Assistant API ile genel, gündelik konuşma yanıtı üretir. Teknik konuları yanıtlamaz."""
+    if not openai_client or not OPENAI_ASSISTANT_ID:
+        return 'OpenAI Assistant yapılandırılmadı.'
+
+    guard_instruction = (
+        "Sen bir müşteri destek asistanısın. Ürünlerin teknik detayları, arıza/hata kodları, bakım, servis,"
+        " elektriksel/mekanik yönlendirmeler hakkında yanıt verme; bu konularda kullanıcıyı teknik servise yönlendir."
+        " Sadece gündelik konuşmalar, selamlama, iletişim, çalışma saatleri, marka tanıtımı gibi konularda yardımcı ol."
+    )
+
+    try:
+        thread = openai_client.beta.threads.create()
+        openai_client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role='user',
+            content=f"[Kural: {guard_instruction}]\nKullanıcı: {user_message}"
+        )
+        run = openai_client.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=OPENAI_ASSISTANT_ID,
+        )
+        # Basit polling
+        import time
+        while True:
+            run_status = openai_client.beta.threads.runs.retrieve(
+                thread_id=thread.id,
+                run_id=run.id
+            )
+            if run_status.status == 'completed':
+                break
+            if run_status.status in ['failed', 'cancelled', 'expired']:
+                return f'OpenAI Assistant çalıştırma durumu: {run_status.status}'
+            time.sleep(0.8)
+        messages = openai_client.beta.threads.messages.list(thread_id=thread.id)
+        for msg in reversed(messages.data):
+            if msg.role == 'assistant':
+                parts = []
+                for c in msg.content:
+                    if hasattr(c, 'text') and hasattr(c.text, 'value'):
+                        parts.append(c.text.value)
+                if parts:
+                    return ' '.join(parts)
+        return 'OpenAI Assistant yanıtı alınamadı.'
+    except Exception as e:
+        return f'OpenAI Assistant hatası: {e}'
+
+
 @app.route('/api/register', methods=['POST'])
 def register():
     """E-posta kaydı ve doğrulama kodu gönderimi"""
@@ -473,10 +572,51 @@ def chat():
     # Mesajı kaydet
     save_chat_message(user_id, message, 'user')
     
-    # Bot yanıtı oluştur
-    bot_response = generate_bot_response(message)
+    # 0) Düşük bilgi ise hemen netleştirici yanıt ver
+    if is_low_information_message(message):
+        bot_response = (
+            "Size doğru yardımcı olabilmem için lütfen konuyu biraz netleştirir misiniz?\n"
+            "Örnekler: 'ER21 hatası', 'Yüksek basınç alarmı', 'İletişim bilgileri', 'Servis talebi'"
+        )
+        save_chat_message(user_id, bot_response, 'bot')
+        return jsonify({'success': True, 'response': bot_response})
+
+    # 1) Hata kodları/teknik içerik → yerel bilgi tabanı
+    bot_response = None
+    tech_hit = find_error_entry(message)
+    if tech_hit:
+        lines = []
+        st_kodu = tech_hit.get('st542_kodu') or '-'
+        carel_kodu = tech_hit.get('carel_kodu') or '-'
+        plc_ekran = tech_hit.get('plc_ekran') or ''
+        aciklama = tech_hit.get('aciklama') or ''
+        sebep = tech_hit.get('sebep') or ''
+        yorum_listesi = tech_hit.get('yorum') or []
+        header = plc_ekran or 'Hata Bilgisi'
+        header += f" ({st_kodu} / {carel_kodu})"
+        lines.append(header)
+        if aciklama:
+            lines.append(f"Açıklama: {aciklama}")
+        if sebep:
+            lines.append(f"Sebep: {sebep}")
+        if yorum_listesi:
+            lines.append("Öneriler:")
+            for y in yorum_listesi:
+                lines.append(f"- {y}")
+        bot_response = "\n".join(lines)
+
+    # 2) Teknik değilse ve OpenAI yapılandırıldıysa Assistant'a yönlendir
+    if bot_response is None and not is_product_technical_question(message):
+        if openai_client:
+            bot_response = ask_openai_assistant(message)
+
+    # 3) Hala yoksa deterministik fallback
+    if bot_response is None:
+        bot_response = (
+            "Anladım; daha net yardımcı olabilmem için lütfen şu biçimde yazın: 'ER05', 'Pompa aşırı yük', 'İletişim bilgileri'."
+        )
+
     save_chat_message(user_id, bot_response, 'bot')
-    
     return jsonify({
         'success': True,
         'response': bot_response
@@ -543,28 +683,29 @@ def generate_bot_response(user_message):
         return "\n".join(lines)
 
     lower_message = user_message.lower()
+
+    # Düşük bilgi mesajları için standart netleştirici yanıt
+    if is_low_information_message(lower_message):
+        return (
+            "Size doğru yardımcı olabilmem için lütfen konuyu biraz netleştirir misiniz?\n"
+            "Örnekler: 'ER21 hatası', 'Yüksek basınç alarmı', 'İletişim bilgileri', 'Servis talebi'"
+        )
     
     if 'merhaba' in lower_message or 'selam' in lower_message:
         return 'Merhaba! Size nasıl yardımcı olabilirim? 😊'
     elif 'ürün' in lower_message or 'hizmet' in lower_message:
-        return 'Ürünlerimiz hakkında detaylı bilgi almak için web sitemizi ziyaret edebilir veya bizimle iletişime geçebilirsiniz. Hangi ürün hakkında bilgi almak istiyorsunuz?'
+        return 'Hangi ürün hakkında bilgi almak istiyorsunuz?'
     elif 'fiyat' in lower_message or 'ücret' in lower_message:
-        return 'Fiyat bilgileri için lütfen bizimle iletişime geçin. Size en uygun fiyat teklifini sunmaktan memnuniyet duyarız. 📞'
+        return 'Fiyat bilgisi için ürün/model belirtir misiniz?'
     elif 'iletişim' in lower_message or 'telefon' in lower_message or 'email' in lower_message:
-        return 'Bizimle iletişime geçmek için:\n📞 Telefon: +90 555 123 45 67\n📧 Email: info@eracochillers.com\n📍 Adres: İstanbul, Türkiye'
-    elif 'teşekkür' in lower_message or 'sağol' in lower_message:
-        return 'Rica ederim! Başka bir konuda yardıma ihtiyacınız olursa çekinmeden sorabilirsiniz. 😊'
+        return 'İletişim: 📞 +90 555 123 45 67 | 📧 info@eracochillers.com | 📍 İstanbul, Türkiye'
     elif 'görüşürüz' in lower_message or 'hoşça kal' in lower_message:
         return 'Görüşmek üzere! İyi günler dilerim. 👋'
-    else:
-        responses = [
-            'Anlıyorum, size daha iyi yardımcı olabilmem için biraz daha detay verebilir misiniz?',
-            'Bu konuda size yardımcı olmaktan memnuniyet duyarım. Hangi konuda bilgi almak istiyorsunuz?',
-            'Harika bir soru! Bu konuda uzman ekibimizle görüşmenizi öneririm.',
-            'Size en iyi hizmeti sunmak için buradayız. Başka bir konuda yardıma ihtiyacınız var mı?',
-            'Bu konuda size detaylı bilgi verebilirim. Hangi özellik hakkında daha fazla bilgi almak istiyorsunuz?'
-        ]
-        return random.choice(responses)
+    
+    # Son fallback: tek tip açıklayıcı mesaj (rastgele cevap yok)
+    return (
+        "Anladım; daha net yardımcı olabilmem için lütfen şu biçimde yazın: 'ER05', 'Pompa aşırı yük', 'İletişim bilgileri'."
+    )
 
 if __name__ == '__main__':
     init_database()
