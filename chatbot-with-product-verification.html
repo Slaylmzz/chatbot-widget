@@ -182,25 +182,104 @@
               <i class="fas fa-paper-plane"></i>
             </button>
           </div>
-          <div class="quick-replies" id="quickReplies">
-            <button
-              class="quick-reply"
-              data-message="Ürünleriniz hakkında bilgi almak istiyorum"
-            >
-              Ürünler
-            </button>
-            <button
-              class="quick-reply"
-              data-message="Fiyat bilgisi alabilir miyim?"
-            >
-              Fiyat
-            </button>
-            <button
-              class="quick-reply"
-              data-message="İletişim bilgilerinizi paylaşır mısınız?"
-            >
-              İletişim
-            </button>
+          <!-- Technical Service Form Button -->
+          <div class="technical-service-prompt" id="technicalServicePrompt" style="display: none;">
+            <div class="service-prompt-content">
+              <p>Teknik sorunuz çözülmedi mi? Teknik servis formunu doldurun:</p>
+              <button class="service-form-btn" id="showServiceFormBtn">
+                <i class="fas fa-tools"></i>
+                Teknik Servis Formu
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Service Form Screen -->
+        <div class="verification-screen" id="serviceFormScreen" style="display: none;">
+          <div class="verification-content">
+            <div class="verification-icon">
+              <i class="fas fa-tools"></i>
+            </div>
+            <h3>Teknik Servis Formu</h3>
+            <p>Teknik destek talebinizi oluşturun</p>
+            
+            <form id="technicalServiceForm" class="service-form">
+              <h4>Genel Bilgiler</h4>
+              <div class="form-group">
+                <label for="customerName">Ad Soyad *</label>
+                <input type="text" id="customerName" required>
+              </div>
+              <div class="form-group">
+                <label for="companyName">Firma Adı</label>
+                <input type="text" id="companyName">
+              </div>
+              <div class="form-group">
+                <label for="customerPhone">Telefon Numarası *</label>
+                <input type="tel" id="customerPhone" required>
+              </div>
+              <div class="form-group">
+                <label for="customerEmail">E-posta Adresi *</label>
+                <input type="email" id="customerEmail" required>
+              </div>
+              <div class="form-group">
+                <label for="customerAddress">Adres *</label>
+                <textarea id="customerAddress" rows="2" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="requestDate">Talep Tarihi</label>
+                <input type="date" id="requestDate" readonly>
+              </div>
+
+              <h4>Cihaz Bilgileri</h4>
+              <div class="form-group">
+                <label for="deviceModel">Cihaz Modeli</label>
+                <input type="text" id="deviceModel">
+              </div>
+              <div class="form-group">
+                <label for="serialNumber">Seri Numarası</label>
+                <input type="text" id="serialNumber" readonly>
+              </div>
+              <div class="form-group">
+                <label for="deviceLocation">Cihazın Konumu (Açık-Kapalı liste: Açık)</label>
+                <select id="deviceLocation">
+                  <option value="">Seçiniz</option>
+                  <option value="acik">Açık</option>
+                  <option value="kapali">Kapalı</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="errorCode">Arıza Kodu (Varsa)</label>
+                <input type="text" id="errorCode">
+              </div>
+              <div class="form-group">
+                <label for="currentError">Ekrandaki Hata Mesajı</label>
+                <textarea id="currentError" rows="2"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="problemDescription">Sorun Açıklaması *</label>
+                <textarea id="problemDescription" rows="3" required placeholder="Yaşadığınız teknik sorunu detaylı olarak açıklayın..."></textarea>
+              </div>
+              <div class="form-group">
+                <label for="preferredDate">Tercih Edilen Servis Tarihi</label>
+                <input type="date" id="preferredDate">
+              </div>
+              <div class="form-group">
+                <label for="additionalNotes">Ek Notlar / Yorumlar</label>
+                <textarea id="additionalNotes" rows="2"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Service Form Actions - Fixed at bottom -->
+        <div class="service-form-actions" id="serviceFormActions" style="display: none;">
+          <button type="button" class="cancel-btn" id="cancelServiceForm">Geri</button>
+          <button type="submit" class="submit-btn" id="submitServiceForm" form="technicalServiceForm">
+            <i class="fas fa-paper-plane"></i>
+            Gönder
+          </button>
+        </div>
           </div>
         </div>
       </div>

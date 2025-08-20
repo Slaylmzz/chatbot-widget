@@ -1,10 +1,12 @@
 class ChatbotWidgetWithProductVerification {
   constructor() {
-    this.apiBaseUrl = "http://localhost:5000/api";
+    this.apiBaseUrl = "http://127.0.0.1:5000/api";
     this.userId = null;
     this.isEmailVerified = false;
     this.isProductVerified = false;
     this.products = [];
+    this.userLocation = null;
+    this.messageCount = 0;
 
     this.initializeElements();
     this.bindEvents();
@@ -50,7 +52,16 @@ class ChatbotWidgetWithProductVerification {
     this.chatInputContainer = document.getElementById("chatInputContainer");
     this.chatInput = document.getElementById("chatInput");
     this.sendMessageBtn = document.getElementById("sendMessage");
-    this.quickReplies = document.querySelectorAll(".quick-reply");
+
+    // Technical service form elements
+    this.technicalServicePrompt = document.getElementById(
+      "technicalServicePrompt"
+    );
+    this.showServiceFormBtn = document.getElementById("showServiceFormBtn");
+    this.serviceFormScreen = document.getElementById("serviceFormScreen");
+    this.serviceFormActions = document.getElementById("serviceFormActions");
+    this.technicalServiceForm = document.getElementById("technicalServiceForm");
+    this.cancelServiceForm = document.getElementById("cancelServiceForm");
   }
 
   bindEvents() {
@@ -88,14 +99,19 @@ class ChatbotWidgetWithProductVerification {
       if (e.key === "Enter") this.sendMessage();
     });
 
-    // Quick replies
-    this.quickReplies.forEach((button) => {
-      button.addEventListener("click", () => {
-        const message = button.getAttribute("data-message");
-        this.chatInput.value = message;
-        this.sendMessage();
-      });
-    });
+    // Technical service form events
+    this.showServiceFormBtn.addEventListener("click", () =>
+      this.showServiceForm()
+    );
+    this.cancelServiceForm.addEventListener("click", () =>
+      this.hideServiceForm()
+    );
+    this.technicalServiceForm.addEventListener("submit", (e) =>
+      this.submitServiceForm(e)
+    );
+
+    // Get user location on initialization
+    this.getUserLocation();
   }
 
   async loadProducts() {
@@ -146,22 +162,34 @@ class ChatbotWidgetWithProductVerification {
         body: JSON.stringify({ email }),
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (data.success) {
         this.userId = data.user_id;
-        this.showEmailStatus(
-          "Doğrulama kodu e-posta adresinize gönderildi",
-          "success"
-        );
-        this.emailForm.style.display = "none";
-        this.emailCodeForm.style.display = "block";
-        this.clearEmailCodeInputs();
-        this.emailCodeInputs[0].focus();
+
+        // Otomatik doğrulama kontrolü
+        if (data.auto_verified) {
+          this.isEmailVerified = true;
+          this.showProductVerificationScreen();
+        } else {
+          this.showEmailStatus(
+            "Doğrulama kodu e-posta adresinize gönderildi",
+            "success"
+          );
+          this.emailForm.style.display = "none";
+          this.emailCodeForm.style.display = "block";
+          this.clearEmailCodeInputs();
+          this.emailCodeInputs[0].focus();
+        }
       } else {
         this.showEmailStatus(data.message, "error");
       }
     } catch (error) {
+      console.error("Register error:", error);
       this.showEmailStatus("Bağlantı hatası. Lütfen tekrar deneyin.", "error");
     } finally {
       this.sendCodeBtn.disabled = false;
@@ -323,6 +351,9 @@ class ChatbotWidgetWithProductVerification {
 
       if (data.success) {
         this.isProductVerified = true;
+        // Ürün bilgilerini sakla
+        this.verifiedProductName = productName;
+        this.verifiedSerialNumber = serialNumber;
         this.showProductStatus("Ürün doğrulaması başarılı!", "success");
         setTimeout(() => {
           this.showChatInterface();
@@ -354,6 +385,162 @@ class ChatbotWidgetWithProductVerification {
     this.chatInput.focus();
   }
 
+  getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.userLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          };
+        },
+        (error) => {
+          console.log("Konum alınamadı:", error);
+          // Fallback to IP-based location will be handled on server side
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000,
+        }
+      );
+    }
+  }
+
+  showServiceForm() {
+    // Hide chat interface and show service form screen
+    this.chatMessages.style.display = "none";
+    this.chatInputContainer.style.display = "none";
+    this.serviceFormScreen.style.display = "flex";
+    this.serviceFormActions.style.display = "flex";
+    
+    // Pre-fill email if available
+    const emailInput = document.getElementById("customerEmail");
+    if (emailInput && this.emailInput.value) {
+      emailInput.value = this.emailInput.value;
+    }
+    
+    // Pre-fill request date (today)
+    const requestDate = document.getElementById("requestDate");
+    if (requestDate) {
+      const today = new Date().toISOString().split('T')[0];
+      requestDate.value = today;
+    }
+    
+    // Pre-fill product information if available
+    const deviceModel = document.getElementById("deviceModel");
+    const serialNumber = document.getElementById("serialNumber");
+    
+    if (this.verifiedProductName && deviceModel) {
+      deviceModel.value = this.verifiedProductName;
+    }
+    
+    if (this.verifiedSerialNumber && serialNumber) {
+      serialNumber.value = this.verifiedSerialNumber;
+    }
+    
+    // Set device location to "Açık" by default
+    const deviceLocation = document.getElementById("deviceLocation");
+    if (deviceLocation) {
+      deviceLocation.value = "acik";
+    }
+  }
+
+  hideServiceForm() {
+    // Hide service form and show chat interface
+    this.serviceFormScreen.style.display = "none";
+    this.serviceFormActions.style.display = "none";
+    this.chatMessages.style.display = "block";
+    this.chatInputContainer.style.display = "block";
+    this.technicalServiceForm.reset();
+  }
+
+  async submitServiceForm(event) {
+    event.preventDefault();
+
+    // Form validasyonu
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+    const email = document.getElementById("customerEmail").value.trim();
+    const address = document.getElementById("customerAddress").value.trim();
+    const problem = document.getElementById("problemDescription").value.trim();
+
+    if (!name || !phone || !email || !address || !problem) {
+      alert("Lütfen tüm zorunlu alanları doldurun.");
+      return;
+    }
+
+    if (!this.userId) {
+      alert("Kullanıcı doğrulaması bulunamadı. Lütfen sayfayı yenileyin.");
+      return;
+    }
+
+    const formData = {
+      user_id: this.userId,
+      name: name,
+      company_name: document.getElementById("companyName").value.trim(),
+      phone: phone,
+      email: email,
+      address: address,
+      request_date: document.getElementById("requestDate").value,
+      device_model: document.getElementById("deviceModel").value.trim(),
+      serial_number: document.getElementById("serialNumber").value.trim(),
+      device_location: document.getElementById("deviceLocation").value,
+      error_code: document.getElementById("errorCode").value.trim(),
+      current_error: document.getElementById("currentError").value.trim(),
+      problem_description: problem,
+      preferred_date: document.getElementById("preferredDate").value,
+      additional_notes: document.getElementById("additionalNotes").value.trim(),
+      location: this.userLocation,
+      timestamp: new Date().toISOString(),
+    };
+
+    const submitBtn = document.getElementById("submitServiceForm");
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<div class="loading"></div> Gönderiliyor...';
+
+    try {
+      console.log("Form gönderiliyor:", formData);
+
+      const response = await fetch(`${this.apiBaseUrl}/technical-service`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      console.log("Sunucu yanıtı:", response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Yanıt verisi:", data);
+
+      if (data.success) {
+        alert(
+          "Teknik servis talebiniz başarıyla gönderildi. En kısa sürede size dönüş yapılacaktır."
+        );
+        this.hideServiceForm();
+        this.addMessage(
+          "Teknik servis talebiniz alındı. Teşekkür ederiz!",
+          "bot"
+        );
+      } else {
+        alert("Bir hata oluştu: " + data.message);
+      }
+    } catch (error) {
+      console.error("Form gönderme hatası:", error);
+      alert("Bağlantı hatası. Lütfen tekrar deneyin. Hata: " + error.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Gönder';
+    }
+  }
+
   async sendMessage() {
     const message = this.chatInput.value.trim();
 
@@ -362,6 +549,22 @@ class ChatbotWidgetWithProductVerification {
     // Kullanıcı mesajını ekle
     this.addMessage(message, "user");
     this.chatInput.value = "";
+    this.messageCount++;
+
+    // Destek talebi kontrolü
+    const supportKeywords = ['destek', 'teknik servis', 'servis', 'arıza', 'sorun', 'yardım'];
+    const messageWords = message.toLowerCase().split(' ');
+    const hasSupport = supportKeywords.some(keyword => 
+      messageWords.some(word => word.includes(keyword))
+    );
+
+    if (hasSupport) {
+      this.addMessage("Teknik servis formu açılıyor...", "bot");
+      setTimeout(() => {
+        this.showServiceForm();
+      }, 1000);
+      return;
+    }
 
     // Bot yanıtını al
     try {
@@ -380,6 +583,13 @@ class ChatbotWidgetWithProductVerification {
 
       if (data.success) {
         this.addMessage(data.response, "bot");
+
+        // Show technical service prompt after 2 messages
+        if (this.messageCount >= 2) {
+          setTimeout(() => {
+            this.technicalServicePrompt.style.display = "block";
+          }, 2000);
+        }
       } else {
         this.addMessage(
           "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.",
@@ -391,13 +601,50 @@ class ChatbotWidgetWithProductVerification {
     }
   }
 
+  shouldShowServicePrompt(userMessage, botResponse) {
+    // Check if the conversation indicates a technical problem that might need service
+    const technicalKeywords = [
+      "hata",
+      "arıza",
+      "çalışmıyor",
+      "bozuk",
+      "sorun",
+      "problem",
+      "er",
+      "al",
+      "alarm",
+    ];
+    const unsolvedIndicators = [
+      "çözüm",
+      "yardım",
+      "nasıl",
+      "ne yapmalı",
+      "devam ediyor",
+    ];
+
+    const userLower = userMessage.toLowerCase();
+    const botLower = botResponse.toLowerCase();
+
+    const hasTechnicalKeyword = technicalKeywords.some(
+      (keyword) => userLower.includes(keyword) || botLower.includes(keyword)
+    );
+
+    const hasUnsolvedIndicator = unsolvedIndicators.some((indicator) =>
+      userLower.includes(indicator)
+    );
+
+    return (
+      hasTechnicalKeyword && (hasUnsolvedIndicator || this.messageCount >= 3)
+    );
+  }
+
   addMessage(text, sender) {
     const messageDiv = document.createElement("div");
     messageDiv.className = `message ${sender}-message`;
 
     const contentDiv = document.createElement("div");
     contentDiv.className = "message-content";
-    contentDiv.innerHTML = `<p>${text}</p>`;
+    contentDiv.innerHTML = `<p>${text.replace(/\n/g, "<br>")}</p>`;
 
     const timeDiv = document.createElement("div");
     timeDiv.className = "message-time";

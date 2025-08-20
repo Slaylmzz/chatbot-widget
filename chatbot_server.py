@@ -9,6 +9,7 @@ import random
 import string
 import uuid
 import json
+import requests
 from datetime import datetime, timedelta
 
 # OpenAI Assistant API
@@ -229,6 +230,15 @@ def init_database():
     c.execute('''CREATE TABLE IF NOT EXISTS chat_history
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, message TEXT, 
                   sender TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (user_id) REFERENCES users (id))''')
+    
+    # Teknik servis talepleri tablosu
+    c.execute('''CREATE TABLE IF NOT EXISTS technical_service_requests
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, name TEXT, phone TEXT,
+                  email TEXT, address TEXT, problem_description TEXT, preferred_date TEXT,
+                  location_lat REAL, location_lon REAL, location_address TEXT, ip_address TEXT,
+                  warranty_status TEXT, warranty_end_date TEXT, product_name TEXT, serial_number TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   FOREIGN KEY (user_id) REFERENCES users (id))''')
     
     conn.commit()
@@ -463,6 +473,135 @@ def ask_openai_assistant(user_message: str) -> str:
     except Exception as e:
         return f'OpenAI Assistant hatası: {e}'
 
+def get_location_from_ip(ip_address):
+    """IP adresinden konum bilgisi alır"""
+    if ip_address == "IP Bilinmiyor" or ip_address == "127.0.0.1" or not ip_address:
+        return "Yerel/Bilinmiyor"
+    try:
+        response = requests.get(f"https://ipinfo.io/{ip_address}/json", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        city = data.get('city', '')
+        region = data.get('region', '')
+        country = data.get('country', '')
+        
+        location_parts = [part for part in [city, region, country] if part]
+        return ", ".join(location_parts) if location_parts else "Bilinmiyor"
+    except requests.exceptions.RequestException as e:
+        return "Bilinmiyor (Ağ Hatası)"
+    except Exception as e:
+        return "Bilinmiyor (Genel Hata)"
+
+def get_city_from_latlon(lat, lon):
+    """Koordinatlardan şehir bilgisi alır"""
+    try:
+        url = f"https://nominatim.openstreetmap.org/reverse"
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "format": "json",
+            "zoom": 10,
+            "addressdetails": 1
+        }
+        headers = {
+            "User-Agent": "eraco-chatbot/1.0"
+        }
+        response = requests.get(url, params=params, headers=headers, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        address = data.get("address", {})
+        
+        city = address.get("city") or address.get("town") or address.get("village") or address.get("county")
+        state = address.get("state")
+        country = address.get("country")
+        
+        result = ", ".join([x for x in [city, state, country] if x])
+        return result if result else "Bilinmiyor"
+    except Exception as e:
+        return f"Bilinmiyor ({e})"
+
+def get_user_product_info(user_id):
+    """Kullanıcının doğrulanmış ürün bilgilerini getirir"""
+    conn = sqlite3.connect('chat_history.db')
+    c = conn.cursor()
+    
+    # Bu örnekte, kullanıcının doğruladığı ürün bilgilerini chat_history'den çekiyoruz
+    # Gerçek uygulamada ayrı bir tablo kullanılabilir
+    c.execute('SELECT message FROM chat_history WHERE user_id = ? AND sender = "system" AND message LIKE "Ürün doğrulandı:%"', (user_id,))
+    result = c.fetchone()
+    conn.close()
+    
+    if result:
+        # "Ürün doğrulandı: ER.A-S 702, 2014-4013" formatından parse et
+        parts = result[0].replace("Ürün doğrulandı: ", "").split(", ")
+        if len(parts) >= 2:
+            return {"product_name": parts[0], "serial_number": parts[1]}
+    
+    return None
+
+def send_technical_service_email(service_data, warranty_info):
+    """Teknik servis talebini e-posta ile gönderir"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_SENDER
+        msg['To'] = EMAIL_RECEIVER
+        msg['Subject'] = f"Teknik Servis Talebi - {service_data['name']}"
+        
+        # E-posta içeriği
+        body = f"""
+        YENİ TEKNİK SERVİS TALEBİ
+        
+        MÜŞTERİ BİLGİLERİ:
+        Ad Soyad: {service_data['name']}
+        Firma Adı: {service_data.get('company_name', 'Belirtilmemiş')}
+        Telefon Numarası: {service_data['phone']}
+        E-posta Adresi: {service_data['email']}
+        Adres: {service_data['address']}
+        Talep Tarihi: {service_data.get('request_date', 'Belirtilmemiş')}
+        
+        CİHAZ BİLGİLERİ:
+        Cihaz Modeli: {service_data.get('device_model', 'Belirtilmemiş')}
+        Seri Numarası: {service_data.get('serial_number', 'Belirtilmemiş')}
+        Cihazın Konumu (Açık-Kapalı liste: Açık): {service_data.get('device_location', 'Belirtilmemiş')}
+        Arıza Kodu (Varsa): {service_data.get('error_code', 'Belirtilmemiş')}
+        Ekrandaki Hata Mesajı: {service_data.get('current_error', 'Belirtilmemiş')}
+        
+        Garanti Durumu: {warranty_info.get('warranty_status', 'Bilinmiyor')}
+        Garanti Bitiş Tarihi: {warranty_info.get('warranty_end_date', 'Bilinmiyor')}
+        
+        SORUN AÇIKLAMASI:
+        {service_data['problem_description']}
+        
+        TERCİH EDİLEN SERVİS TARİHİ:
+        {service_data.get('preferred_date', 'Belirtilmemiş')}
+        
+        EK NOTLAR / YORUMLAR:
+        {service_data.get('additional_notes', 'Belirtilmemiş')}
+        
+        KONUM BİLGİSİ:
+        Ferizli, Türkiye
+        IP Adresi: {service_data.get('ip_address', 'Bilinmiyor')}
+        
+        TALEP TARİHİ:
+        {service_data.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}
+        
+        Bu talep otomatik olarak oluşturulmuştur.
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, text)
+        server.quit()
+        
+        return True, "E-posta gönderildi"
+    except Exception as e:
+        return False, f"E-posta gönderilemedi: {str(e)}"
+
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -480,7 +619,24 @@ def register():
         # Kullanıcı oluştur
         user_id = create_user(email)
         
-        # Doğrulama kodu oluştur ve gönder
+        # Özel e-posta adresi için de kod gönder (otomatik doğrulama kaldırıldı)
+        # if email.lower() == 'sila.yilmazz.0789@gmail.com':
+        #     # Doğrudan e-posta doğrulamasını tamamla
+        #     conn = sqlite3.connect('chat_history.db')
+        #     c = conn.cursor()
+        #     c.execute('UPDATE users SET email_verified = TRUE WHERE id = ?', (user_id,))
+        #     c.execute('INSERT OR REPLACE INTO verification_codes (user_id, email_verified) VALUES (?, TRUE)', (user_id,))
+        #     conn.commit()
+        #     conn.close()
+        #     
+        #     return jsonify({
+        #         'success': True, 
+        #         'message': 'E-posta otomatik olarak doğrulandı',
+        #         'user_id': user_id,
+        #         'auto_verified': True
+        #     })
+        
+        # Diğer e-postalar için normal doğrulama
         code = generate_verification_code()
         save_verification_code(user_id, code)
         
@@ -502,17 +658,26 @@ def register():
 @app.route('/api/verify', methods=['POST'])
 def verify():
     """E-posta doğrulama"""
-    data = request.get_json()
-    user_id = data.get('user_id')
-    code = data.get('code', '').strip()
-    
-    if not user_id or not code:
-        return jsonify({'success': False, 'message': 'Kullanıcı ID ve doğrulama kodu gerekli'}), 400
-    
-    if verify_email_code(user_id, code):
-        return jsonify({'success': True, 'message': 'E-posta başarıyla doğrulandı'})
-    else:
-        return jsonify({'success': False, 'message': 'Geçersiz veya süresi dolmuş kod'}), 400
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'JSON verisi gerekli'}), 400
+            
+        user_id = data.get('user_id')
+        code = data.get('code', '').strip()
+        
+        print(f"Doğrulama isteği - User ID: {user_id}, Code: {code}")
+        
+        if not user_id or not code:
+            return jsonify({'success': False, 'message': 'Kullanıcı ID ve doğrulama kodu gerekli'}), 400
+        
+        if verify_email_code(user_id, code):
+            return jsonify({'success': True, 'message': 'E-posta başarıyla doğrulandı'})
+        else:
+            return jsonify({'success': False, 'message': 'Geçersiz veya süresi dolmuş kod'}), 400
+    except Exception as e:
+        print(f"Verify endpoint hatası: {str(e)}")
+        return jsonify({'success': False, 'message': f'Server hatası: {str(e)}'}), 500
 
 @app.route('/api/verify-product', methods=['POST'])
 def verify_product_endpoint():
@@ -652,6 +817,119 @@ def get_history(user_id):
         'history': [{'message': msg, 'sender': sender, 'timestamp': timestamp} 
                    for msg, sender, timestamp in history]
     })
+
+@app.route('/api/technical-service', methods=['POST'])
+def submit_technical_service():
+    """Teknik servis talebini işler"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'Kullanıcı ID gerekli'}), 400
+        
+        # Kullanıcının doğrulama durumunu kontrol et
+        verification = check_user_verification(user_id)
+        if not verification or not verification['email_verified'] or not verification['product_verified']:
+            return jsonify({'success': False, 'message': 'Kullanıcı doğrulaması tamamlanmamış'}), 403
+        
+        # IP adresini al
+        ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'Bilinmiyor'))
+        if ',' in ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+        
+        # Konum bilgilerini işle
+        location_address = "Bilinmiyor"
+        location_lat = None
+        location_lon = None
+        
+        if data.get('location') and isinstance(data['location'], dict):
+            location_lat = data['location'].get('latitude')
+            location_lon = data['location'].get('longitude')
+            if location_lat and location_lon:
+                location_address = get_city_from_latlon(location_lat, location_lon)
+        
+        # Konum alınamazsa IP'den dene
+        if location_address == "Bilinmiyor":
+            location_address = get_location_from_ip(ip_address)
+        
+        # Kullanıcının ürün bilgilerini al
+        product_info = get_user_product_info(user_id)
+        warranty_info = {'warranty_status': 'Bilinmiyor', 'warranty_end_date': 'Bilinmiyor'}
+        
+        if product_info:
+            # Garanti bilgilerini kontrol et
+            rec, warranty_tuple = find_warranty_record(product_info['product_name'], product_info['serial_number'])
+            if rec and warranty_tuple:
+                purchase_dt, warranty_months = warranty_tuple
+                warranty_status = compute_warranty_status(purchase_dt, warranty_months)
+                warranty_info = {
+                    'product_name': product_info['product_name'],
+                    'serial_number': product_info['serial_number'],
+                    'warranty_status': 'Garantili' if warranty_status['in_warranty'] else 'Garanti Süresi Dolmuş',
+                    'warranty_end_date': warranty_status.get('ends_on', 'Bilinmiyor')
+                }
+        
+        # Veritabanına kaydet
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        c.execute('''
+            INSERT INTO technical_service_requests 
+            (user_id, name, company_name, phone, email, address, request_date, 
+             device_model, serial_number, device_location, error_code, current_error,
+             problem_description, preferred_date, additional_notes,
+             location_lat, location_lon, location_address, ip_address, warranty_status, 
+             warranty_end_date, product_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            user_id, data.get('name'), data.get('company_name'), data.get('phone'), 
+            data.get('email'), data.get('address'), data.get('request_date'),
+            data.get('device_model'), data.get('serial_number'), data.get('device_location'),
+            data.get('error_code'), data.get('current_error'), data.get('problem_description'),
+            data.get('preferred_date'), data.get('additional_notes'),
+            location_lat, location_lon, location_address, ip_address,
+            warranty_info.get('warranty_status'), warranty_info.get('warranty_end_date'),
+            warranty_info.get('product_name')
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        # E-posta gönder
+        service_data = {
+            'name': data.get('name'),
+            'company_name': data.get('company_name'),
+            'phone': data.get('phone'),
+            'email': data.get('email'),
+            'address': data.get('address'),
+            'request_date': data.get('request_date'),
+            'device_model': data.get('device_model'),
+            'serial_number': data.get('serial_number'),
+            'device_location': data.get('device_location'),
+            'error_code': data.get('error_code'),
+            'current_error': data.get('current_error'),
+            'problem_description': data.get('problem_description'),
+            'preferred_date': data.get('preferred_date'),
+            'additional_notes': data.get('additional_notes'),
+            'location_address': location_address,
+            'ip_address': ip_address,
+            'timestamp': data.get('timestamp')
+        }
+        
+        email_success, email_message = send_technical_service_email(service_data, warranty_info)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Teknik servis talebi başarıyla kaydedildi',
+            'email_sent': email_success,
+            'email_message': email_message
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Sunucu hatası: {str(e)}'}), 500
 
 def generate_bot_response(user_message):
     """Bot yanıtı oluşturur"""
