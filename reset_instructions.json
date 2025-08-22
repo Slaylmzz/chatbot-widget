@@ -1,0 +1,71 @@
+{
+  "reset_instructions": {
+    "st542": {
+      "model_name": "Eliwell ST 542",
+      "keywords": ["st542", "st 542", "eliwell", "st-542"],
+      "error_codes": ["ER00", "ER01", "ER02", "ER21", "ER22", "ER03", "ER04", "ER05"],
+      "reset_steps": [
+        {
+          "step": 1,
+          "title": "Alarm/Hata Onaylama",
+          "description": "Bir hata hangi bir tuşa (yukarı ve aşağı) aynı anda basılı tutarak resetleme yapılmaktadır. Herhangi bir tuşa bastıktan sonra alarm LED'i yanıp sönmeye başlayacaktır.",
+          "note": "Hata kodu ekranda görünür durumda olmalı (örn: Er01)",
+          "image": "./images/st542_alarm_display.jpg"
+        },
+        {
+          "step": 2,
+          "title": "Manuel Reset İşlemi",
+          "description": "Bir alarmı manuel olarak resetlemek istiyorsanız UP+DOWN tuşlarını aynı anda basılı tutun. Cihaz reset moduna geçecektir.",
+          "note": "Aktif bir alarmı resetlemek bu alarmın AL dosyası altında kayıt altına alır",
+          "image": "./images/st542_manual_reset.jpg"
+        },
+        {
+          "step": 3,
+          "title": "Reset Onayı",
+          "description": "Reset işlemi başladıktan sonra cihaz ana ekrana dönecektir. Ekranda normal sıcaklık değeri görünmeye başlayacaktır.",
+          "note": "Örnek: manuel reset (alarm) - Reset işlemi tamamlandığında alarm geçmişe kaydedilir",
+          "image": "./images/st542_normal_display.jpg"
+        },
+        {
+          "step": 4,
+          "title": "İşlem Tamamlama",
+          "description": "Cihaz ana ekrana dönecektir ve normal çalışma moduna geçecektir. Alarm durumu temizlenmiş olacaktır.",
+          "note": "Reset sonrası cihazın normal çalışma sıcaklığını gösterdiğinden emin olun"
+        }
+      ]
+    },
+    "carel": {
+      "model_name": "Carel Kontrol Ünitesi", 
+      "keywords": ["carel", "karel", "carel kontrol", "dokunmatik", "touchscreen", "touch", "ekran"],
+      "error_codes": ["AL003", "AL032", "AL30", "AL31", "AL001", "AL002", "AL004"],
+      "reset_steps": [
+        {
+          "step": 1,
+          "title": "Model Tipine Göre Reset",
+          "description": "Carel ürünlerinde iki farklı reset yöntemi vardır:",
+          "note": "Cihazınızın ekran tipine göre uygun yöntemi seçin"
+        },
+        {
+          "step": 2,
+          "title": "Klasik Ekranlı Modeller - Alarm Tuşu",
+          "description": "Klasik LCD ekranlı Carel modellerinde alarm tuşuna 3 saniye basılı tutarak resetleme yapılır. Alarm tuşu genellikle kırmızı renkli veya alarm simgesi ile işaretlenmiştir.",
+          "note": "Alarm tuşu ekranın sol tarafında bulunur, 3 saniye basılı tutun",
+          "image": "./images/carel_alarm_button.jpg"
+        },
+        {
+          "step": 3,
+          "title": "Dokunmatik Ekranlı Modeller - Reset Tuşu",
+          "description": "Dokunmatik ekranlı Carel modellerinde ekranda RESET tuşu vardır. Bu mavi renkli tuşa basılarak resetleme yapılır.",
+          "note": "Reset tuşu genellikle ekranın alt kısmında mavi renkte görünür",
+          "image": "./images/carel_touchscreen_reset.jpg"
+        },
+        {
+          "step": 4,
+          "title": "İşlem Tamamlama",
+          "description": "Her iki yöntemde de reset işlemi tamamlandıktan sonra cihaz normal çalışma moduna dönecektir. Alarm durumu temizlenmiş olacaktır.",
+          "note": "Cihazın normal parametreleri gösterdiğinden emin olun"
+        }
+      ]
+    }
+  }
+}

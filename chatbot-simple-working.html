@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eraco Chatbot - Çalışan Versiyon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+        }
+        
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .chatbot-toggle i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .chatbot-container {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chatbot-container.active {
+            display: flex;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chatbot-info h4 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .chatbot-info .status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+        }
+        
+        .message.user .message-text {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: 50px;
+        }
+        
+        .message.bot .message-text {
+            background: white;
+            color: #333;
+            margin-right: 50px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .message-text {
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .user .message-time {
+            text-align: right;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+        
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        
+        .send-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .technical-service-prompt {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .service-btn {
+            background: #fd79a8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="chatbot-widget">
+        <div class="chatbot-toggle" id="chatbotToggle">
+            <i class="fas fa-comments"></i>
+            <span class="notification-badge" id="notificationBadge">1</span>
+        </div>
+        
+        <div class="chatbot-container" id="chatbotContainer">
+            <div class="chatbot-header">
+                <div class="chatbot-info">
+                    <h4>Eraco Yardım Asistanı</h4>
+                    <span class="status">Çevrimiçi</span>
+                </div>
+                <button class="close-btn" id="closeChatbot">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-text">
+                        Merhaba! Eraco Yardım Asistanına hoş geldiniz! 🎉<br><br>
+                        <strong>Size nasıl yardımcı olabilirim?</strong><br><br>
+                        🔧 <strong>Hata kodları:</strong> ER21, AL003, ER01 gibi kodları yazın<br>
+                        ❓ <strong>Genel sorular:</strong> antifriz, bypass, bakım konularını sorun<br>
+                        🛠️ <strong>Reset talimatları:</strong> 'reset' yazın<br>
+                        🆘 <strong>Teknik destek:</strong> 'yardım' veya 'servis' yazın
+                    </div>
+                    <div class="message-time">10:57</div>
+                </div>
+            </div>
+            
+            <div class="technical-service-prompt" id="technicalServicePrompt">
+                <p><strong>Teknik destek gerekiyor mu?</strong></p>
+                <p>Sorununuz devam ediyorsa teknik servis ekibimizle iletişime geçebilirsiniz.</p>
+                <button class="service-btn" id="showServiceFormBtn">Teknik Servis Formu</button>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="send-btn" id="sendMessage" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SimpleChatbot {
+            constructor() {
+                this.messageCount = 0;
+                this.initializeElements();
+                this.bindEvents();
+                this.loadData();
+            }
+            
+            initializeElements() {
+                this.toggle = document.getElementById('chatbotToggle');
+                this.container = document.getElementById('chatbotContainer');
+                this.closeBtn = document.getElementById('closeChatbot');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.chatInput = document.getElementById('chatInput');
+                this.sendBtn = document.getElementById('sendMessage');
+                this.notificationBadge = document.getElementById('notificationBadge');
+                this.technicalServicePrompt = document.getElementById('technicalServicePrompt');
+                this.showServiceFormBtn = document.getElementById('showServiceFormBtn');
+            }
+            
+            bindEvents() {
+                this.toggle.addEventListener('click', () => this.toggleChatbot());
+                this.closeBtn.addEventListener('click', () => this.toggleChatbot());
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.showServiceFormBtn.addEventListener('click', () => {
+                    alert('Teknik servis formu açılacak - Bu özellik aktif edilecek');
+                });
+            }
+            
+            async loadData() {
+                try {
+                    // FAQ verilerini yükle
+                    const faqResponse = await fetch('./chiller_faq.json');
+                    this.faqData = await faqResponse.json();
+                    
+                    // Reset talimatlarını yükle
+                    const resetResponse = await fetch('./reset_instructions.json');
+                    this.resetData = await resetResponse.json();
+                    
+                    // Hata kodlarını yükle
+                    const errorResponse = await fetch('./urun_hatalari.json');
+                    this.errorData = await errorResponse.json();
+                    
+                    console.log('Tüm veriler yüklendi');
+                } catch (error) {
+                    console.error('Veri yükleme hatası:', error);
+                }
+            }
+            
+            toggleChatbot() {
+                this.container.classList.toggle('active');
+                this.notificationBadge.style.display = 'none';
+            }
+            
+            sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+                
+                this.addMessage(message, 'user');
+                this.chatInput.value = '';
+                this.messageCount++;
+                
+                // Bot yanıtını oluştur
+                setTimeout(() => {
+                    const response = this.generateResponse(message);
+                    this.addMessage(response, 'bot');
+                    
+                    // 2 mesajdan sonra teknik servis prompt'unu göster
+                    if (this.messageCount >= 2) {
+                        setTimeout(() => {
+                            this.technicalServicePrompt.style.display = 'block';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+            
+            generateResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                // Hata kodu kontrolü
+                const machineType = this.detectMachineType(message);
+                if (machineType) {
+                    return this.generateResetInstructions(machineType);
+                }
+                
+                // Reset isteği
+                if (lowerMessage.includes('reset')) {
+                    return 'Reset işlemi için cihaz modelini belirtin:\\n\\n🔹 **ST542** için: "ER21" veya "ST542"\\n🔹 **Carel** için: "AL003" veya "Carel"';
+                }
+                
+                // FAQ kontrolü
+                const faqAnswer = this.findFAQAnswer(message);
+                if (faqAnswer) {
+                    return `**${faqAnswer.question}**\\n\\n${faqAnswer.answer}`;
+                }
+                
+                // Destek talebi
+                const supportKeywords = ['destek', 'yardım', 'servis', 'arıza', 'sorun'];
+                if (supportKeywords.some(keyword => lowerMessage.includes(keyword))) {
+                    return 'Teknik destek için size yardımcı olmaya hazırım! Sorununuzu detaylı olarak anlatabilir misiniz?';
+                }
+                
+                // Genel yanıt
+                return 'Merhaba! Size nasıl yardımcı olabilirim? 😊\\n\\n🔧 **Hata kodları:** ER21, AL003, ER01 gibi kodları yazın\\n❓ **Genel sorular:** antifriz, bypass, bakım konularını sorun\\n🛠️ **Reset talimatları:** "reset" yazın\\n🆘 **Teknik destek:** "yardım" veya "servis" yazın';
+            }
+            
+            detectMachineType(message) {
+                if (!this.errorData) return null;
+                
+                const lowerMessage = message.toLowerCase();
+                
+                // Hata kodlarından tespit et
+                for (const error of this.errorData) {
+                    // ST542 kodları
+                    if (error.st542_kodu && error.st542_kodu.trim() !== '') {
+                        const st542Codes = error.st542_kodu.split('/');
+                        for (const code of st542Codes) {
+                            if (lowerMessage.includes(code.trim().toLowerCase())) {
+                                return 'st542';
+                            }
+                        }
+                    }
+                    
+                    // Carel kodları
+                    if (error.carel_kodu && error.carel_kodu.trim() !== '') {
+                        if (lowerMessage.includes(error.carel_kodu.trim().toLowerCase())) {
+                            return 'carel';
+                        }
+                    }
+                }
+                
+                // Anahtar kelimeler
+                if (lowerMessage.includes('st542') || lowerMessage.includes('st 542') || lowerMessage.includes('eliwell')) {
+                    return 'st542';
+                }
+                
+                if (lowerMessage.includes('carel') || lowerMessage.includes('dokunmatik') || lowerMessage.includes('touchscreen')) {
+                    return 'carel';
+                }
+                
+                return null;
+            }
+            
+            generateResetInstructions(machineType) {
+                if (!this.resetData) return 'Reset talimatları yüklenemedi.';
+                
+                const instructions = this.resetData.reset_instructions[machineType];
+                if (!instructions) return 'Bu model için reset talimatı bulunamadı.';
+                
+                let response = `**${instructions.model_name} Reset Talimatları**\\n\\n`;
+                
+                instructions.reset_steps.forEach((step, index) => {
+                    response += `**Adım ${step.step}: ${step.title}**\\n`;
+                    response += `${step.description}\\n`;
+                    if (step.note) {
+                        response += `💡 *${step.note}*\\n`;
+                    }
+                    response += '\\n';
+                });
+                
+                response += '⚠️ **Önemli:** Reset işlemi sonrası cihazınızın normal çalıştığını kontrol edin.';
+                return response;
+            }
+            
+            findFAQAnswer(message) {
+                if (!this.faqData || !this.faqData.faq) return null;
+                
+                const lowerMessage = message.toLowerCase();
+                let bestMatch = null;
+                let maxScore = 0;
+                
+                for (const faq of this.faqData.faq) {
+                    let score = 0;
+                    const questionLower = faq.question.toLowerCase();
+                    
+                    // Basit kelime eşleştirme
+                    const messageWords = lowerMessage.split(' ');
+                    const questionWords = questionLower.split(' ');
+                    
+                    for (const messageWord of messageWords) {
+                        if (messageWord.length > 2) {
+                            for (const questionWord of questionWords) {
+                                if (questionWord.includes(messageWord) || messageWord.includes(questionWord)) {
+                                    score += 1;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Özel anahtar kelimeler
+                    const specialKeywords = {
+                        'antifriz': ['antifriz', 'donma', 'koruma'],
+                        'bypass': ['bypass', 'by-pass', 'debi'],
+                        'bakım': ['bakım', 'periyodik', 'servis'],
+                        'filtre': ['filtre', 'pislik', 'temizlik']
+                    };
+                    
+                    for (const [key, keywords] of Object.entries(specialKeywords)) {
+                        if (questionLower.includes(key)) {
+                            for (const keyword of keywords) {
+                                if (lowerMessage.includes(keyword)) {
+                                    score += 2;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (score > maxScore && score >= 2) {
+                        maxScore = score;
+                        bestMatch = faq;
+                    }
+                }
+                
+                return bestMatch;
+            }
+            
+            addMessage(message, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                // Markdown benzeri formatlama
+                const formattedMessage = message
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\\n/g, '<br>')
+                    .replace(/🔧/g, '<span style="color: #667eea;">🔧</span>')
+                    .replace(/❓/g, '<span style="color: #f093fb;">❓</span>')
+                    .replace(/🛠️/g, '<span style="color: #4facfe;">🛠️</span>')
+                    .replace(/🆘/g, '<span style="color: #ff6b6b;">🆘</span>')
+                    .replace(/⚠️/g, '<span style="color: #f5576c;">⚠️</span>')
+                    .replace(/💡/g, '<span style="color: #ffd700;">💡</span>')
+                    .replace(/😊/g, '<span style="color: #4ecdc4;">😊</span>');
+                
+                messageDiv.innerHTML = `
+                    <div class="message-text">${formattedMessage}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}</div>
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+        
+        // Chatbot'u başlat
+        document.addEventListener('DOMContentLoaded', () => {
+            new SimpleChatbot();
+        });
+    </script>
+</body>
+</html>

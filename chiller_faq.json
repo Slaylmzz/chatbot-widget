@@ -1,0 +1,108 @@
+{
+  "faq": [
+    {
+      "question": "Antifriz kullanmak gerekli midir? Oranı ne olmalıdır?",
+      "answer": "Evet, antifriz kullanımı chiller sistemlerinde donma riskini önlemek ve sistemin uzun ömürlü çalışmasını sağlamak için gereklidir. Önerilen oran, ortam sıcaklığına göre değişmekle birlikte genellikle %25 ile %50 arasındadır. Üretici tavsiyeleri dikkate alınmalıdır."
+    },
+    {
+      "question": "Antifriz kullanımının mümkün olmadığı sistemlerde ne gibi koruma önlemleri uygulanmalıdır?",
+      "answer": "Bu tür sistemlerde su sıcaklığı kesinlikle 5°C’nin altına düşmemelidir. Sistem kullanılmayacaksa içindeki su tamamen boşaltılmalıdır. Ayrıca sistem izolasyonu ve ortam sıcaklık kontrolü de ek önlem olarak uygulanmalıdır."
+    },
+    {
+      "question": "Su hattında neden By-Pass kullanılır?",
+      "answer": "Chiller sistemleri, belirli bir debide su sirkülasyonu ile verimli çalışır. Pompanın fazla debi üretmesi durumunda, bu suyun bir kısmının sisteme zarar vermemesi için bypass hattı üzerinden geri gönderilmesi sağlanır. Bu, sistemdeki basınç dalgalanmalarını da dengeler."
+    },
+    {
+      "question": "By-Pass hattı nasıl olmalıdır?",
+      "answer": "Pompa çıkış hattından chiller dönüş hattına doğrudan bağlanmalıdır. Hattın üzerinde bir kontrol vanası bulunmalı, sistemin debi ihtiyacına göre ayar yapılmalıdır. Doğru çapta ve kısa mesafede döşenmesi önemlidir."
+    },
+    {
+      "question": "Zaman geçtikçe chillerin gazı eskir mi? Gaz değiştirilmesi gerekir mi?",
+      "answer": "Soğutma çevrimi kapalı bir sistemdir ve sistemde kaçak olmadığı sürece gazın değişmesine gerek yoktur. Gaz özelliklerini kaybetmez."
+    },
+    {
+      "question": "Periyodik olarak değişmesi gereken ekipmanlar nelerdir? Değişme periyotları nedir?",
+      "answer": "Filtreler, yağ, antifriz seviyesi ve elektriksel bağlantılar periyodik olarak kontrol edilmeli, ihtiyaç halinde değiştirilmelidir. Bakım periyodu genellikle 6 ayda bir yapılmalıdır."
+    },
+    {
+      "question": "Periyodik bakımda dikkat edilmesi gereken konular nelerdir?",
+      "answer": "Tüm elektriksel bağlantılar, kontrol panosu, kompresör, gaz basınçları, su filtresi, antifriz seviyesi, izolasyonlar detaylı şekilde incelenmelidir."
+    },
+    {
+      "question": "Chiller konumlandırması yapılırken nelere dikkat edilmelidir?",
+      "answer": "Servis alanı için cihaz çevresinde minimum 2 metre boşluk bırakılmalıdır. Kondenser hava akışı engellenmemeli, doğrudan güneş ışığı ve hava sirkülasyonunu engelleyen yapılardan uzak olmalıdır."
+    },
+    {
+      "question": "Chiller üzerine sundurma yapılırken nelere dikkat edilmelidir?",
+      "answer": "Fan çıkış yönüne göre sıcak havanın tekrar emilmesini engelleyecek yükseklikte sundurma yapılmalı (min 3-6 metre). Gerekirse sıcak hava baca sistemiyle dışarı yönlendirilmelidir."
+    },
+    {
+      "question": "İhtiyaçtan farklı çapta çekilen su hattı ne gibi sorunlar oluşturur?",
+      "answer": "Düşük çapta boru kullanımı debi düşüklüğüne, yüksek çapta ise basınç kaybına sebep olur. Sistem verimsiz çalışır, ekipmanlar zarar görebilir."
+    },
+    {
+      "question": "Chiller hattında neden filtre kullanımı zorunludur?",
+      "answer": "Pislik tutucu filtre, tesisattaki partiküllerin evaporatöre ve pompalara zarar vermesini önler. Aksi takdirde ciddi arızalar ve garanti dışı durumlar oluşabilir."
+    },
+    {
+      "question": "Chiller elektrik beslemesi yapılırken nelere dikkat edilmelidir?",
+      "answer": "Kablo kesiti uygun olmalı, nötr ve topraklama düzgün yapılmalı, kaçak akım ve sigorta koruma sistemleri aktif olmalıdır."
+    },
+    {
+      "question": "Chiller’in konulacağı zemin ile ilgili dikkat edilmesi gerekenler nelerdir?",
+      "answer": "Düz, sağlam ve titreşim sönümleyici taban hazırlanmalı; cihazla zemin arasına titreşim takozları yerleştirilmelidir."
+    },
+    {
+      "question": "Chiller ünitesinin bakım planı nedir?",
+      "answer": "Yılda 2 kez, yaz ve kış sezonları öncesinde bakım yapılmalıdır. Yoğun kullanımda saat bazlı bakımlar da planlanabilir (örneğin 5000 saat)."
+    },
+    {
+      "question": "Chiller ünitesine bakım hizmeti talep edildiğinde şartlar ve ücretler nelerdir?",
+      "answer": "Bakım ücretleri cihaz kapasitesine, konumuna ve işçilik süresine göre değişir. Servis sözleşmesi olan firmalar avantajlıdır."
+    },
+    {
+      "question": "Teknik servis müdahale süresi nedir?",
+      "answer": "Uzaktan destek 7/24 sağlanır. Fiziksel servis talebine maksimum 48 saat içinde müdahale edilir."
+    },
+    {
+      "question": "Yedek parça temin süresi nedir?",
+      "answer": "Standart ürünler için 10 yıla kadar yedek parça temini sağlanır. Teknolojik değişiklikler hariçtir."
+    },
+    {
+      "question": "Chiller ünitesinde sadece su mu kullanılmalıdır?",
+      "answer": "Hayır. Donma ve korozyona karşı inhibitörlü antifriz kullanımı önerilmektedir. Su/antifriz karışımı ideal çözümdür."
+    },
+    {
+      "question": "Chiller ünitesi sürekli çalışmalı mı?",
+      "answer": "Hayır. Sistemin ihtiyacına göre çalışır. Çalışmadığı zamanlarda antifriz seviyesine dikkat edilmeli veya sistem boşaltılmalıdır."
+    },
+    {
+      "question": "Sıfır derece altı sıcaklıklarda önlem alınmalı mı?",
+      "answer": "Evet. Donma riskine karşı inhibitörlü antifriz kullanılmalı, sistem izolasyonu kontrol edilmelidir."
+    },
+    {
+      "question": "Chiller ünitesi için başka ek sıvılara ihtiyaç var mı?",
+      "answer": "Soğutma çevriminde ek sıvı gerekmez. Su tarafında ise antifriz düzenli kontrol edilmeli ve eksiklik tamamlanmalıdır."
+    },
+    {
+      "question": "Garanti kapsamındaki arızalar nelerdir?",
+      "answer": "Kullanıcı hatası, dış darbe, uygun olmayan montaj ve şebeke kaynaklı arızalar garanti dışıdır. Diğer tüm üretim kaynaklı arızalar garanti kapsamındadır."
+    },
+    {
+      "question": "Anlık destek alınabilir mi?",
+      "answer": "Evet, teknik destek ekibi telefon veya e-posta yoluyla 7/24 hizmet verir."
+    },
+    {
+      "question": "Chiller ekranında arıza uyarı sistemi var mı?",
+      "answer": "Evet. Tüm cihazlarda sesli/görsel uyarı verecek alarm kontak çıkışı mevcuttur."
+    },
+    {
+      "question": "Ürünün CE belgesi var mı?",
+      "answer": "Evet. Ürünlerimiz Avrupa standartlarına uygun CE belgeli olarak üretilmektedir."
+    },
+    {
+      "question": "Herhangi bir parçanın arızası hizmet süresini uzatır mı?",
+      "answer": "Yedek parçaların çoğu stokta bulunmaktadır. Aksi durumda yurt içi temin süresi 1-3 iş günü içinde tamamlanır."
+    }
+  ]
+}

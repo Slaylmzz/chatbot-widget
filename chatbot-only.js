@@ -4,9 +4,11 @@ class ChatbotWidget {
     this.isOpen = false;
     this.isTyping = false;
     this.messages = [];
+    this.faqData = null;
     this.initializeElements();
     this.bindEvents();
     this.loadInitialMessage();
+    this.loadFAQData();
   }
 
   initializeElements() {
@@ -85,6 +87,19 @@ class ChatbotWidget {
     this.addMessage(message, "user");
     this.input.value = "";
 
+    // Önce FAQ kontrolü yap
+    const faqAnswer = this.findFAQAnswer(message);
+    if (faqAnswer) {
+      // Show typing indicator
+      this.showTypingIndicator();
+      
+      setTimeout(() => {
+        this.hideTypingIndicator();
+        this.addMessage(`**${faqAnswer.question}**\n\n${faqAnswer.answer}`, "bot");
+      }, 800 + Math.random() * 1000);
+      return;
+    }
+
     // Show typing indicator
     this.showTypingIndicator();
 
@@ -100,10 +115,14 @@ class ChatbotWidget {
     messageDiv.className = `message ${sender}-message`;
 
     const time = this.getCurrentTime();
+    
+    // Markdown benzeri formatlamayı destekle
+    let formattedText = text.replace(/\n/g, "<br>");
+    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
     messageDiv.innerHTML = `
             <div class="message-content">
-                <p>${this.escapeHtml(text)}</p>
+                <p>${formattedText}</p>
             </div>
             <div class="message-time">${time}</div>
         `;
@@ -198,6 +217,80 @@ class ChatbotWidget {
       "Size en iyi hizmeti sunmak için buradayız. Başka bir konuda yardıma ihtiyacınız var mı?",
       "Bu konuda size detaylı bilgi verebilirim. Hangi özellik hakkında daha fazla bilgi almak istiyorsunuz?",
     ];
+  }
+
+  async loadFAQData() {
+    try {
+      const response = await fetch('./chiller_faq.json');
+      this.faqData = await response.json();
+      console.log('Chiller FAQ verileri yüklendi:', this.faqData);
+    } catch (error) {
+      console.error('FAQ verileri yüklenemedi:', error);
+    }
+  }
+
+  findFAQAnswer(userMessage) {
+    if (!this.faqData || !this.faqData.faq) {
+      return null;
+    }
+
+    const messageLower = userMessage.toLowerCase();
+    let bestMatch = null;
+    let maxScore = 0;
+
+    for (const faq of this.faqData.faq) {
+      let score = 0;
+      const questionLower = faq.question.toLowerCase();
+      
+      // Soru metninde geçen anahtar kelimeleri kontrol et
+      const questionWords = questionLower.split(' ');
+      const messageWords = messageLower.split(' ');
+      
+      // Ortak kelime sayısını hesapla
+      for (const messageWord of messageWords) {
+        if (messageWord.length > 2) { // 2 karakterden uzun kelimeler
+          for (const questionWord of questionWords) {
+            if (questionWord.includes(messageWord) || messageWord.includes(questionWord)) {
+              score += 1;
+            }
+          }
+        }
+      }
+      
+      // Özel anahtar kelimeler için ek puan
+      const specialKeywords = {
+        'antifriz': ['antifriz', 'donma', 'koruma'],
+        'bypass': ['bypass', 'by-pass', 'debi'],
+        'gaz': ['gaz', 'soğutma', 'değişim'],
+        'bakım': ['bakım', 'periyodik', 'servis'],
+        'konumlandırma': ['konum', 'yerleştirme', 'montaj'],
+        'sundurma': ['sundurma', 'koruma', 'güneş'],
+        'filtre': ['filtre', 'pislik', 'temizlik'],
+        'elektrik': ['elektrik', 'kablo', 'beslem'],
+        'zemin': ['zemin', 'taban', 'titreşim'],
+        'garanti': ['garanti', 'arıza', 'kapsam'],
+        'destek': ['destek', 'yardım', 'teknik'],
+        'chiller': ['chiller', 'soğutma', 'sistem']
+      };
+      
+      for (const [key, keywords] of Object.entries(specialKeywords)) {
+        if (questionLower.includes(key)) {
+          for (const keyword of keywords) {
+            if (messageLower.includes(keyword)) {
+              score += 2; // Özel anahtar kelimeler için daha yüksek puan
+            }
+          }
+        }
+      }
+
+      // En yüksek skoru alan FAQ'i seç
+      if (score > maxScore && score >= 2) { // Minimum 2 puan gerekli
+        maxScore = score;
+        bestMatch = faq;
+      }
+    }
+
+    return bestMatch;
   }
 
   loadInitialMessage() {

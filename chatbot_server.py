@@ -208,7 +208,7 @@ def init_database():
     
     # Kullanıcılar tablosu
     c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id TEXT PRIMARY KEY, email TEXT, email_verified BOOLEAN DEFAULT FALSE, 
+                 (id TEXT PRIMARY KEY, email TEXT UNIQUE, email_verified BOOLEAN DEFAULT FALSE, 
                   product_verified BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
     # Eksik sütunları ekle (migrasyon)
@@ -286,15 +286,37 @@ def send_email_verification(email, code):
         return False, f"E-posta gönderilemedi: {str(e)}"
 
 def create_user(email):
-    """Yeni kullanıcı oluşturur"""
-    user_id = str(uuid.uuid4())
+    """Yeni kullanıcı oluşturur veya mevcut kullanıcının ID'sini döndürür"""
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
     
-    c.execute('INSERT INTO users (id, email) VALUES (?, ?)', (user_id, email))
-    conn.commit()
-    conn.close()
+    # Önce bu email ile kayıtlı kullanıcı var mı kontrol et
+    c.execute('SELECT id FROM users WHERE email = ?', (email,))
+    existing_user = c.fetchone()
     
+    if existing_user:
+        conn.close()
+        print(f"Mevcut kullanıcı bulundu: {email} -> {existing_user[0]}")
+        return existing_user[0]
+    
+    # Yeni kullanıcı oluştur
+    user_id = str(uuid.uuid4())
+    try:
+        c.execute('INSERT INTO users (id, email) VALUES (?, ?)', (user_id, email))
+        conn.commit()
+        print(f"Yeni kullanıcı oluşturuldu: {email} -> {user_id}")
+    except sqlite3.IntegrityError:
+        # Eğer UNIQUE constraint hatası alırsak, tekrar kontrol et
+        c.execute('SELECT id FROM users WHERE email = ?', (email,))
+        existing_user = c.fetchone()
+        if existing_user:
+            conn.close()
+            return existing_user[0]
+        else:
+            conn.close()
+            raise Exception("Kullanıcı oluşturulamadı")
+    
+    conn.close()
     return user_id
 
 def save_verification_code(user_id, code):
@@ -818,6 +840,328 @@ def get_history(user_id):
                    for msg, sender, timestamp in history]
     })
 
+# Admin API endpoints
+@app.route('/api/admin/stats', methods=['GET'])
+def get_admin_stats():
+    """Admin paneli için istatistikleri getirir"""
+    try:
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        # Toplam kullanıcı sayısı
+        c.execute('SELECT COUNT(*) FROM users')
+        total_users = c.fetchone()[0]
+        
+        # Toplam mesaj sayısı
+        c.execute('SELECT COUNT(*) FROM chat_history')
+        total_messages = c.fetchone()[0]
+        
+        # Servis talepleri
+        c.execute('SELECT COUNT(*) FROM technical_service_requests')
+        service_requests = c.fetchone()[0]
+        
+        # Bugün aktif kullanıcılar
+        c.execute("SELECT COUNT(DISTINCT user_id) FROM chat_history WHERE DATE(timestamp) = DATE('now')")
+        today_users = c.fetchone()[0]
+        
+        # Günlük aktivite (son 7 gün)
+        c.execute("""
+            SELECT DATE(timestamp) as date, COUNT(DISTINCT user_id) as users 
+            FROM chat_history 
+            WHERE timestamp >= datetime('now', '-7 days')
+            GROUP BY DATE(timestamp)
+            ORDER BY date
+        """)
+        daily_activity = [{'date': row[0], 'users': row[1]} for row in c.fetchall()]
+        
+        # En çok sorulan konular (mesaj içeriğine göre basit analiz)
+        c.execute("""
+            SELECT message, COUNT(*) as count
+            FROM chat_history 
+            WHERE sender = 'user' AND LENGTH(message) > 10
+            GROUP BY LOWER(SUBSTR(message, 1, 20))
+            ORDER BY count DESC
+            LIMIT 5
+        """)
+        top_topics = [{'topic': row[0][:20] + '...', 'count': row[1]} for row in c.fetchall()]
+        
+        conn.close()
+        
+        return jsonify({
+            'totalUsers': total_users,
+            'totalMessages': total_messages,
+            'serviceRequests': service_requests,
+            'todayUsers': today_users,
+            'dailyActivity': daily_activity,
+            'topTopics': top_topics
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/users', methods=['GET'])
+def get_admin_users():
+    """Admin paneli için kullanıcı listesini getirir"""
+    try:
+        filter_type = request.args.get('filter', 'all')
+        
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        query = """
+            SELECT u.id, u.email, u.email_verified, u.product_verified, u.created_at,
+                   MAX(ch.timestamp) as last_activity
+            FROM users u
+            LEFT JOIN chat_history ch ON u.id = ch.user_id
+        """
+        
+        if filter_type == 'verified':
+            query += " WHERE u.email_verified = 1 AND u.product_verified = 1"
+        elif filter_type == 'unverified':
+            query += " WHERE u.email_verified = 0 OR u.product_verified = 0"
+            
+        query += " GROUP BY u.id ORDER BY u.created_at DESC"
+        
+        c.execute(query)
+        users = []
+        for row in c.fetchall():
+            # IP'den konum bilgisi almaya çalış
+            location = "Bilinmiyor"
+            try:
+                c.execute('SELECT ip_address FROM technical_service_requests WHERE user_id = ? LIMIT 1', (row[0],))
+                ip_result = c.fetchone()
+                if ip_result and ip_result[0]:
+                    location = get_location_from_ip(ip_result[0])
+            except:
+                pass
+                
+            users.append({
+                'id': row[0],
+                'email': row[1],
+                'email_verified': bool(row[2]),
+                'product_verified': bool(row[3]),
+                'created_at': row[4],
+                'last_activity': row[5],
+                'location': location
+            })
+        
+        conn.close()
+        return jsonify(users)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/chats', methods=['GET'])
+def get_admin_chats():
+    """Admin paneli için sohbet geçmişini getirir"""
+    try:
+        filter_type = request.args.get('filter', 'all')
+        date_filter = request.args.get('date', '')
+        
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        query = """
+            SELECT u.email, ch.user_id, MAX(ch.timestamp) as last_message_time
+            FROM chat_history ch
+            JOIN users u ON ch.user_id = u.id
+        """
+        
+        conditions = []
+        if filter_type == 'today':
+            conditions.append("DATE(ch.timestamp) = DATE('now')")
+        elif filter_type == 'week':
+            conditions.append("ch.timestamp >= datetime('now', '-7 days')")
+        
+        if date_filter:
+            conditions.append(f"DATE(ch.timestamp) = '{date_filter}'")
+            
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+            
+        query += " GROUP BY ch.user_id ORDER BY last_message_time DESC LIMIT 20"
+        
+        c.execute(query)
+        chat_users = c.fetchall()
+        
+        chats = []
+        for user_email, user_id, last_time in chat_users:
+            # Bu kullanıcının son mesajlarını al
+            c.execute("""
+                SELECT message, sender, timestamp 
+                FROM chat_history 
+                WHERE user_id = ? 
+                ORDER BY timestamp DESC 
+                LIMIT 10
+            """, (user_id,))
+            
+            messages = [{
+                'message': msg[0][:100] + ('...' if len(msg[0]) > 100 else ''),
+                'sender': msg[1],
+                'timestamp': msg[2]
+            } for msg in c.fetchall()]
+            
+            chats.append({
+                'user_email': user_email,
+                'user_id': user_id,
+                'last_message_time': last_time,
+                'messages': list(reversed(messages))
+            })
+        
+        conn.close()
+        return jsonify(chats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/service-requests', methods=['GET'])
+def get_admin_service_requests():
+    """Admin paneli için servis taleplerini getirir"""
+    try:
+        status_filter = request.args.get('status', 'all')
+        
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        query = """
+            SELECT tsr.*, u.email
+            FROM technical_service_requests tsr
+            JOIN users u ON tsr.user_id = u.id
+            ORDER BY tsr.created_at DESC
+        """
+        
+        c.execute(query)
+        requests = []
+        for row in c.fetchall():
+            requests.append({
+                'id': row[0],
+                'user_id': row[1],
+                'name': row[2],
+                'phone': row[3],
+                'email': row[4],
+                'address': row[5],
+                'problem_description': row[6],
+                'preferred_date': row[7],
+                'location_lat': row[8],
+                'location_lon': row[9],
+                'location_address': row[10],
+                'ip_address': row[11],
+                'warranty_status': row[12],
+                'warranty_end_date': row[13],
+                'product_name': row[14],
+                'serial_number': row[15],
+                'created_at': row[16],
+                'user_email': row[17]
+            })
+        
+        conn.close()
+        return jsonify(requests)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/analytics', methods=['GET'])
+def get_admin_analytics():
+    """Admin paneli için analitik verilerini getirir"""
+    try:
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        # Konum dağılımı
+        c.execute("""
+            SELECT location_address, COUNT(*) as count
+            FROM technical_service_requests 
+            WHERE location_address IS NOT NULL AND location_address != ''
+            GROUP BY location_address
+            ORDER BY count DESC
+            LIMIT 10
+        """)
+        locations = [{'location': row[0] or 'Bilinmiyor', 'count': row[1]} for row in c.fetchall()]
+        
+        # Sık sorulan sorular
+        c.execute("""
+            SELECT message, COUNT(*) as count
+            FROM chat_history 
+            WHERE sender = 'user' AND LENGTH(message) > 5
+            GROUP BY LOWER(message)
+            HAVING count > 1
+            ORDER BY count DESC
+            LIMIT 10
+        """)
+        questions = [{'question': row[0][:50] + ('...' if len(row[0]) > 50 else ''), 'count': row[1]} for row in c.fetchall()]
+        
+        # Hata kodu analizi (mesajlardan hata kodlarını çıkar)
+        c.execute("""
+            SELECT message
+            FROM chat_history 
+            WHERE sender = 'user' AND (message LIKE '%ER%' OR message LIKE '%AL%')
+        """)
+        
+        error_codes = {}
+        for row in c.fetchall():
+            message = row[0].upper()
+            # ER ve AL kodlarını bul
+            import re
+            codes = re.findall(r'\b(ER\d{1,3}|AL\d{1,3})\b', message)
+            for code in codes:
+                error_codes[code] = error_codes.get(code, 0) + 1
+        
+        error_codes_list = [{'code': k, 'count': v} for k, v in sorted(error_codes.items(), key=lambda x: x[1], reverse=True)[:10]]
+        
+        conn.close()
+        
+        return jsonify({
+            'locations': locations,
+            'questions': questions,
+            'errorCodes': error_codes_list
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/recent-activity', methods=['GET'])
+def get_recent_activity():
+    """Son aktiviteleri getirir"""
+    try:
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        
+        activities = []
+        
+        # Son kullanıcı kayıtları
+        c.execute("""
+            SELECT email, created_at
+            FROM users 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        """)
+        for row in c.fetchall():
+            activities.append({
+                'type': 'user_register',
+                'title': 'Yeni Kullanıcı Kaydı',
+                'description': f'{row[0]} sisteme kayıt oldu',
+                'timestamp': row[1]
+            })
+        
+        # Son servis talepleri
+        c.execute("""
+            SELECT tsr.name, tsr.created_at, u.email
+            FROM technical_service_requests tsr
+            JOIN users u ON tsr.user_id = u.id
+            ORDER BY tsr.created_at DESC 
+            LIMIT 5
+        """)
+        for row in c.fetchall():
+            activities.append({
+                'type': 'service_request',
+                'title': 'Yeni Servis Talebi',
+                'description': f'{row[0]} ({row[2]}) servis talebi oluşturdu',
+                'timestamp': row[1]
+            })
+        
+        # Aktiviteleri zamana göre sırala
+        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        conn.close()
+        return jsonify(activities[:10])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/technical-service', methods=['POST'])
 def submit_technical_service():
     """Teknik servis talebini işler"""
@@ -984,6 +1328,155 @@ def generate_bot_response(user_message):
     return (
         "Anladım; daha net yardımcı olabilmem için lütfen şu biçimde yazın: 'ER05', 'Pompa aşırı yük', 'İletişim bilgileri'."
     )
+
+@app.route('/')
+def serve_chatbot():
+    """Ana chatbot sayfasını sunar"""
+    try:
+        with open('chatbot-with-product-verification.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Chatbot HTML dosyası bulunamadı", 404
+
+@app.route('/chatbot-with-product-verification.html')
+def serve_chatbot_direct():
+    """Chatbot sayfasını doğrudan sunar"""
+    try:
+        with open('chatbot-with-product-verification.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Chatbot HTML dosyası bulunamadı", 404
+
+@app.route('/chatbot-with-product-verification.css')
+def serve_css():
+    """CSS dosyasını sunar"""
+    try:
+        with open('chatbot-with-product-verification.css', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='text/css'
+            )
+            return response
+    except FileNotFoundError:
+        return "CSS dosyası bulunamadı", 404
+
+@app.route('/chatbot-with-product-verification.js')
+def serve_js():
+    """JavaScript dosyasını sunar"""
+    try:
+        with open('chatbot-with-product-verification.js', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/javascript'
+            )
+            return response
+    except FileNotFoundError:
+        return "JavaScript dosyası bulunamadı", 404
+
+# JSON dosyalarını sunan route'lar
+@app.route('/chiller_faq.json')
+def serve_faq():
+    """FAQ JSON dosyasını sunar"""
+    try:
+        with open('chiller_faq.json', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/json'
+            )
+            return response
+    except FileNotFoundError:
+        return "FAQ dosyası bulunamadı", 404
+
+@app.route('/reset_instructions.json')
+def serve_reset():
+    """Reset talimatları JSON dosyasını sunar"""
+    try:
+        with open('reset_instructions.json', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/json'
+            )
+            return response
+    except FileNotFoundError:
+        return "Reset talimatları dosyası bulunamadı", 404
+
+@app.route('/urun_hatalari.json')
+def serve_errors():
+    """Hata kodları JSON dosyasını sunar"""
+    try:
+        with open('urun_hatalari.json', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/json'
+            )
+            return response
+    except FileNotFoundError:
+        return "Hata kodları dosyası bulunamadı", 404
+
+@app.route('/admin-panel.html')
+def serve_admin_panel():
+    """Admin panel HTML dosyasını sunar"""
+    try:
+        with open('admin-panel.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Admin panel dosyası bulunamadı", 404
+
+@app.route('/admin-login', methods=['POST'])
+def admin_login():
+    """Admin panel giriş kontrolü"""
+    data = request.get_json()
+    username = data.get('username', '')
+    password = data.get('password', '')
+    
+    # Basit şifre kontrolü (gerçek uygulamada hash kullanın)
+    ADMIN_USERNAME = "admin"
+    ADMIN_PASSWORD = "eraco2024"
+    
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        return jsonify({
+            'success': True,
+            'message': 'Giriş başarılı',
+            'token': 'admin_authenticated'
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'message': 'Kullanıcı adı veya şifre hatalı'
+        }), 401
+
+@app.route('/admin-panel.css')
+def serve_admin_css():
+    """Admin panel CSS dosyasını sunar"""
+    try:
+        with open('admin-panel.css', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='text/css'
+            )
+            return response
+    except FileNotFoundError:
+        return "Admin panel CSS dosyası bulunamadı", 404
+
+@app.route('/admin-panel.js')
+def serve_admin_js():
+    """Admin panel JavaScript dosyasını sunar"""
+    try:
+        with open('admin-panel.js', 'r', encoding='utf-8') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/javascript'
+            )
+            return response
+    except FileNotFoundError:
+        return "Admin panel JavaScript dosyası bulunamadı", 404
 
 if __name__ == '__main__':
     init_database()
