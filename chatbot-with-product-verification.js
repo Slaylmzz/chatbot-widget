@@ -844,10 +844,13 @@ class ChatbotWidgetWithProductVerification {
                               message.toLowerCase().includes('sıfırla');
       
       if (isResetRequested) {
-        // Reset isteniyorsa reset talimatı ver
+        // Reset isteniyorsa önce hata bilgisi, sonra reset talimatı ver
         const resetInstructions = this.generateResetInstructions(machineType);
         setTimeout(() => {
-          this.addMessage(resetInstructions, "bot");
+          this.addMessage(errorInfo, "bot");
+          setTimeout(() => {
+            this.addMessage(resetInstructions, "bot");
+          }, 1000);
         }, 500);
       } else {
         // Reset istenmiyorsa hata bilgisi ver
@@ -861,12 +864,18 @@ class ChatbotWidgetWithProductVerification {
     // Reset isteği kontrolü - sadece "reset" kelimesi varsa ve hata kodu yoksa
     const isResetRequest = message.toLowerCase().includes('reset') && !machineType;
     if (isResetRequest) {
+      // Eğer kullanıcı sadece "reset" yazdıysa, genel reset talimatı ver
       setTimeout(() => {
         this.addMessage(
-          "Reset işlemi için cihazınızın modelini belirtir misiniz?\n\n" +
-          "🔹 **ST 542** modeli için 'ST 542' yazın\n" +
-          "🔹 **Carel** modeli için 'Carel' yazın\n\n" +
-          "Alternatif olarak cihazınızda görünen hata kodunu paylaşabilirsiniz.",
+          "🔧 **Reset Talimatları**\n\n" +
+          "**ST542 Modeli için:**\n" +
+          "• Alarm butonuna basın ve 3 saniye basılı tutun\n" +
+          "• Ekranda 'rSt' yazısı görünecek\n" +
+          "• Tekrar alarm butonuna basarak onaylayın\n\n" +
+          "**Carel Modeli için:**\n" +
+          "• Reset butonuna basın\n" +
+          "• Veya menüden Reset seçeneğini bulun\n\n" +
+          "💡 **Daha detaylı reset için hata kodunuzu paylaşabilirsiniz.**",
           "bot"
         );
       }, 800);
@@ -1133,8 +1142,15 @@ class ChatbotWidgetWithProductVerification {
     response += `**Açıklama:** ${foundError.aciklama}\n`;
     response += `**Sebep:** ${foundError.sebep}\n`;
     
-    if (foundError.yorum && foundError.yorum.trim() !== '') {
-      response += `**Not:** ${foundError.yorum}\n`;
+    if (foundError.yorum) {
+      if (Array.isArray(foundError.yorum)) {
+        response += `**Not:**\n`;
+        foundError.yorum.forEach(note => {
+          response += `• ${note}\n`;
+        });
+      } else if (typeof foundError.yorum === 'string' && foundError.yorum.trim() !== '') {
+        response += `**Not:** ${foundError.yorum}\n`;
+      }
     }
     
     response += `\n💡 **Reset için:** "${foundError.st542_kodu || foundError.carel_kodu} reset" yazın`;
