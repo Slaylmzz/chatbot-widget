@@ -19,8 +19,8 @@ class ChatbotWidgetWithProductVerification {
   }
 
   initializeElements() {
-    console.log('Initializing elements...');
-    
+    console.log("Initializing elements...");
+
     // Ana elementler
     this.toggle = document.getElementById("chatbotToggle");
     this.container = document.getElementById("chatbotContainer");
@@ -70,11 +70,11 @@ class ChatbotWidgetWithProductVerification {
     this.serviceFormActions = document.getElementById("serviceFormActions");
     this.technicalServiceForm = document.getElementById("technicalServiceForm");
     this.cancelServiceForm = document.getElementById("cancelServiceForm");
-    
-    console.log('Elements initialized:', {
+
+    console.log("Elements initialized:", {
       chatMessages: this.chatMessages,
       chatInput: this.chatInput,
-      sendMessageBtn: this.sendMessageBtn
+      sendMessageBtn: this.sendMessageBtn,
     });
   }
 
@@ -270,14 +270,14 @@ class ChatbotWidgetWithProductVerification {
     const st542Keywords = this.resetData.reset_instructions.st542.keywords;
     for (const keyword of st542Keywords) {
       if (messageLower.includes(keyword)) {
-        return 'st542';
+        return "st542";
       }
     }
 
     const carelKeywords = this.resetData.reset_instructions.carel.keywords;
     for (const keyword of carelKeywords) {
       if (messageLower.includes(keyword)) {
-        return 'carel';
+        return "carel";
       }
     }
 
@@ -310,7 +310,7 @@ class ChatbotWidgetWithProductVerification {
   toggleChatbot() {
     this.container.classList.toggle("active");
     this.notificationBadge.style.display = "none";
-    
+
     // Konum iznini chatbot açıldığında iste
     if (this.container.classList.contains("active") && !this.userLocation) {
       this.getUserLocation();
@@ -564,7 +564,7 @@ class ChatbotWidgetWithProductVerification {
     // Konum iznini sadece kullanıcı etkileşimi sonrası iste
     setTimeout(() => {
       if (navigator.geolocation) {
-        console.log('Konum izni isteniyor...');
+        console.log("Konum izni isteniyor...");
         navigator.geolocation.getCurrentPosition(
           (position) => {
             this.userLocation = {
@@ -572,12 +572,14 @@ class ChatbotWidgetWithProductVerification {
               longitude: position.coords.longitude,
               accuracy: position.coords.accuracy,
             };
-            console.log('Konum alındı:', this.userLocation);
+            console.log("Konum alındı:", this.userLocation);
           },
           (error) => {
             console.log("Konum alınamadı:", error.message);
             if (error.code === 1) {
-              console.log('Konum izni reddedildi. Tarayıcı ayarlarından konum iznini açabilirsiniz.');
+              console.log(
+                "Konum izni reddedildi. Tarayıcı ayarlarından konum iznini açabilirsiniz."
+              );
             }
           },
           {
@@ -587,7 +589,7 @@ class ChatbotWidgetWithProductVerification {
           }
         );
       } else {
-        console.log('Tarayıcı konum desteği yok');
+        console.log("Tarayıcı konum desteği yok");
       }
     }, 1000);
   }
@@ -797,10 +799,10 @@ class ChatbotWidgetWithProductVerification {
         setTimeout(() => {
           this.addMessage(
             "Merhaba! Size nasıl yardımcı olabilirim? 😊\n\n" +
-            "🔧 **Hata kodları:** ER21, AL003, ER01 gibi kodları yazın\n" +
-            "❓ **Genel sorular:** antifriz, bypass, bakım konularını sorun\n" +
-            "🛠️ **Reset talimatları:** 'reset' yazın\n" +
-            "🆘 **Teknik destek:** 'yardım' veya 'servis' yazın",
+              "🔧 **Hata kodları:** ER21, AL003, ER01 gibi kodları yazın\n" +
+              "❓ **Genel sorular:** antifriz, bypass, bakım konularını sorun\n" +
+              "🛠️ **Reset talimatları:** 'reset' yazın\n" +
+              "🆘 **Teknik destek:** 'yardım' veya 'servis' yazın",
             "bot"
           );
         }, 800);
@@ -830,19 +832,20 @@ class ChatbotWidgetWithProductVerification {
     console.log("📊 Veri durumu:", {
       faqData: !!this.faqData,
       resetData: !!this.resetData,
-      errorData: !!this.errorData
+      errorData: !!this.errorData,
     });
 
     // Hata kodu kontrolü (en öncelikli)
     const machineType = this.detectMachineType(message);
     console.log("🔧 Tespit edilen makine tipi:", machineType);
-    
+
     if (machineType) {
       const errorInfo = this.getErrorCodeInfo(message);
-      const isResetRequested = message.toLowerCase().includes('reset') || 
-                              message.toLowerCase().includes('resetle') ||
-                              message.toLowerCase().includes('sıfırla');
-      
+      const isResetRequested =
+        message.toLowerCase().includes("reset") ||
+        message.toLowerCase().includes("resetle") ||
+        message.toLowerCase().includes("sıfırla");
+
       if (isResetRequested) {
         // Reset isteniyorsa önce hata bilgisi, sonra reset talimatı ver
         const resetInstructions = this.generateResetInstructions(machineType);
@@ -862,20 +865,21 @@ class ChatbotWidgetWithProductVerification {
     }
 
     // Reset isteği kontrolü - sadece "reset" kelimesi varsa ve hata kodu yoksa
-    const isResetRequest = message.toLowerCase().includes('reset') && !machineType;
+    const isResetRequest =
+      message.toLowerCase().includes("reset") && !machineType;
     if (isResetRequest) {
       // Eğer kullanıcı sadece "reset" yazdıysa, genel reset talimatı ver
       setTimeout(() => {
         this.addMessage(
           "🔧 **Reset Talimatları**\n\n" +
-          "**ST542 Modeli için:**\n" +
-          "• Alarm butonuna basın ve 3 saniye basılı tutun\n" +
-          "• Ekranda 'rSt' yazısı görünecek\n" +
-          "• Tekrar alarm butonuna basarak onaylayın\n\n" +
-          "**Carel Modeli için:**\n" +
-          "• Reset butonuna basın\n" +
-          "• Veya menüden Reset seçeneğini bulun\n\n" +
-          "💡 **Daha detaylı reset için hata kodunuzu paylaşabilirsiniz.**",
+            "**ST542 Modeli için:**\n" +
+            "• Alarm butonuna basın ve 3 saniye basılı tutun\n" +
+            "• Ekranda 'rSt' yazısı görünecek\n" +
+            "• Tekrar alarm butonuna basarak onaylayın\n\n" +
+            "**Carel Modeli için:**\n" +
+            "• Reset butonuna basın\n" +
+            "• Veya menüden Reset seçeneğini bulun\n\n" +
+            "💡 **Daha detaylı reset için hata kodunuzu paylaşabilirsiniz.**",
           "bot"
         );
       }, 800);
@@ -886,7 +890,7 @@ class ChatbotWidgetWithProductVerification {
     console.log("❓ FAQ aranıyor...");
     const faqAnswer = this.findFAQAnswer(message);
     console.log("💡 Bulunan FAQ:", faqAnswer);
-    
+
     if (faqAnswer) {
       setTimeout(() => {
         this.addMessage(
@@ -905,7 +909,7 @@ class ChatbotWidgetWithProductVerification {
     // Destek talebi kontrolü
     const supportKeywords = [
       "destek",
-      "teknik servis", 
+      "teknik servis",
       "servis",
       "arıza",
       "sorun",
@@ -930,14 +934,14 @@ class ChatbotWidgetWithProductVerification {
     setTimeout(() => {
       this.addMessage(
         "Merhaba! Size nasıl yardımcı olabilirim? 😊\n\n" +
-        "🔧 **Hata kodları:** ER21, AL003, ER01 gibi kodları yazın\n" +
-        "❓ **Genel sorular:** antifriz, bypass, bakım konularını sorun\n" +
-        "🛠️ **Reset talimatları:** 'reset' yazın\n" +
-        "🆘 **Teknik destek:** 'yardım' veya 'servis' yazın\n\n" +
-        "💡 Daha detaylı yardım için e-posta ve ürün doğrulaması yapabilirsiniz.",
+          "🔧 **Hata kodları:** ER21, AL003, ER01 gibi kodları yazın\n" +
+          "❓ **Genel sorular:** antifriz, bypass, bakım konularını sorun\n" +
+          "🛠️ **Reset talimatları:** 'reset' yazın\n" +
+          "🆘 **Teknik destek:** 'yardım' veya 'servis' yazın\n\n" +
+          "💡 Daha detaylı yardım için e-posta ve ürün doğrulaması yapabilirsiniz.",
         "bot"
       );
-      
+
       // Show technical service prompt after 2 messages
       if (this.messageCount >= 2) {
         setTimeout(() => {
@@ -985,10 +989,14 @@ class ChatbotWidgetWithProductVerification {
   }
 
   addMessage(message, sender) {
-    console.log('addMessage called:', { message, sender, chatMessages: this.chatMessages });
-    
+    console.log("addMessage called:", {
+      message,
+      sender,
+      chatMessages: this.chatMessages,
+    });
+
     if (!this.chatMessages) {
-      console.error('chatMessages element not found!');
+      console.error("chatMessages element not found!");
       return;
     }
 
@@ -999,14 +1007,38 @@ class ChatbotWidgetWithProductVerification {
     let formattedMessage = message
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
       .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italic
-      .replace(/🔧/g, "<span style='color: #667eea; font-size: 1.1em;'>🔧</span>")
-      .replace(/❓/g, "<span style='color: #f093fb; font-size: 1.1em;'>❓</span>")
-      .replace(/🛠️/g, "<span style='color: #4facfe; font-size: 1.1em;'>🛠️</span>")
-      .replace(/🔹/g, "<span style='color: #43e97b; font-size: 1.1em;'>🔹</span>")
-      .replace(/⚠️/g, "<span style='color: #f5576c; font-size: 1.1em;'>⚠️</span>")
-      .replace(/💡/g, "<span style='color: #ffd700; font-size: 1.1em;'>💡</span>")
-      .replace(/🆘/g, "<span style='color: #ff6b6b; font-size: 1.1em;'>🆘</span>")
-      .replace(/😊/g, "<span style='color: #4ecdc4; font-size: 1.1em;'>😊</span>")
+      .replace(
+        /🔧/g,
+        "<span style='color: #667eea; font-size: 1.1em;'>🔧</span>"
+      )
+      .replace(
+        /❓/g,
+        "<span style='color: #f093fb; font-size: 1.1em;'>❓</span>"
+      )
+      .replace(
+        /🛠️/g,
+        "<span style='color: #4facfe; font-size: 1.1em;'>🛠️</span>"
+      )
+      .replace(
+        /🔹/g,
+        "<span style='color: #43e97b; font-size: 1.1em;'>🔹</span>"
+      )
+      .replace(
+        /⚠️/g,
+        "<span style='color: #f5576c; font-size: 1.1em;'>⚠️</span>"
+      )
+      .replace(
+        /💡/g,
+        "<span style='color: #ffd700; font-size: 1.1em;'>💡</span>"
+      )
+      .replace(
+        /🆘/g,
+        "<span style='color: #ff6b6b; font-size: 1.1em;'>🆘</span>"
+      )
+      .replace(
+        /😊/g,
+        "<span style='color: #4ecdc4; font-size: 1.1em;'>😊</span>"
+      )
       .replace(/\n/g, "<br>"); // Line breaks
 
     // Image support - convert image references to actual images
@@ -1017,97 +1049,113 @@ class ChatbotWidgetWithProductVerification {
 
     messageDiv.innerHTML = `
       <div class="message-content">
-        <div class="message-text" style="line-height: 1.6; padding: 12px 16px; border-radius: 18px; ${sender === 'user' ? 'background: linear-gradient(135deg, #667eea, #764ba2); color: white; margin-left: 20px;' : 'background: #f8f9fa; color: #333; margin-right: 20px; border: 1px solid #e9ecef;'}">${formattedMessage}</div>
-        <div class="message-time" style="font-size: 0.75rem; color: #999; margin-top: 5px; ${sender === 'user' ? 'text-align: right;' : 'text-align: left;'}">${new Date().toLocaleTimeString("tr-TR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}</div>
+        <div class="message-text" style="line-height: 1.6; padding: 12px 16px; border-radius: 18px; ${
+          sender === "user"
+            ? "background: linear-gradient(135deg, #667eea, #764ba2); color: white; margin-left: 20px;"
+            : "background: #f8f9fa; color: #333; margin-right: 20px; border: 1px solid #e9ecef;"
+        }">${formattedMessage}</div>
+        <div class="message-time" style="font-size: 0.75rem; color: #999; margin-top: 5px; ${
+          sender === "user" ? "text-align: right;" : "text-align: left;"
+        }">${new Date().toLocaleTimeString("tr-TR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}</div>
       </div>
     `;
 
-    console.log('Appending message to chatMessages:', messageDiv);
+    console.log("Appending message to chatMessages:", messageDiv);
     this.chatMessages.appendChild(messageDiv);
     this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-    
+
     // Smooth scroll animation
-    messageDiv.style.opacity = '0';
-    messageDiv.style.transform = 'translateY(20px)';
+    messageDiv.style.opacity = "0";
+    messageDiv.style.transform = "translateY(20px)";
     setTimeout(() => {
-      messageDiv.style.transition = 'all 0.3s ease';
-      messageDiv.style.opacity = '1';
-      messageDiv.style.transform = 'translateY(0)';
+      messageDiv.style.transition = "all 0.3s ease";
+      messageDiv.style.opacity = "1";
+      messageDiv.style.transform = "translateY(0)";
     }, 50);
-    
-    console.log('Message added successfully');
+
+    console.log("Message added successfully");
   }
 
   detectMachineType(userMessage) {
     if (!this.errorData || !this.resetData) return null;
-    
+
     const messageLower = userMessage.toLowerCase();
-    
+
     // Hata kodlarından tespit et
     if (this.errorData) {
       for (const error of this.errorData) {
         // ST542 kodları
-        if (error.st542_kodu && error.st542_kodu.trim() !== '') {
-          const st542Codes = error.st542_kodu.split('/');
+        if (error.st542_kodu && error.st542_kodu.trim() !== "") {
+          const st542Codes = error.st542_kodu.split("/");
           for (const code of st542Codes) {
             if (messageLower.includes(code.trim().toLowerCase())) {
-              return 'st542';
+              return "st542";
             }
           }
         }
-        
+
         // Carel kodları
-        if (error.carel_kodu && error.carel_kodu.trim() !== '') {
+        if (error.carel_kodu && error.carel_kodu.trim() !== "") {
           if (messageLower.includes(error.carel_kodu.trim().toLowerCase())) {
-            return 'carel';
+            return "carel";
           }
         }
       }
     }
-    
+
     // Reset talimatlarından anahtar kelimeler
     if (this.resetData && this.resetData.reset_instructions) {
-      const st542Keywords = this.resetData.reset_instructions.st542?.keywords || [];
+      const st542Keywords =
+        this.resetData.reset_instructions.st542?.keywords || [];
       for (const keyword of st542Keywords) {
         if (messageLower.includes(keyword.toLowerCase())) {
-          return 'st542';
+          return "st542";
         }
       }
-      
-      const carelKeywords = this.resetData.reset_instructions.carel?.keywords || [];
+
+      const carelKeywords =
+        this.resetData.reset_instructions.carel?.keywords || [];
       for (const keyword of carelKeywords) {
         if (messageLower.includes(keyword.toLowerCase())) {
-          return 'carel';
+          return "carel";
         }
       }
     }
-    
+
     // Genel anahtar kelimeler
-    if (messageLower.includes('st542') || messageLower.includes('st 542') || messageLower.includes('eliwell')) {
-      return 'st542';
+    if (
+      messageLower.includes("st542") ||
+      messageLower.includes("st 542") ||
+      messageLower.includes("eliwell")
+    ) {
+      return "st542";
     }
-    
-    if (messageLower.includes('carel') || messageLower.includes('dokunmatik') || messageLower.includes('touchscreen')) {
-      return 'carel';
+
+    if (
+      messageLower.includes("carel") ||
+      messageLower.includes("dokunmatik") ||
+      messageLower.includes("touchscreen")
+    ) {
+      return "carel";
     }
-    
+
     return null;
   }
 
   getErrorCodeInfo(userMessage) {
-    if (!this.errorData) return 'Hata bilgileri yüklenemedi.';
-    
+    if (!this.errorData) return "Hata bilgileri yüklenemedi.";
+
     const messageLower = userMessage.toLowerCase();
     let foundError = null;
-    
+
     // Hata kodunu bul
     for (const error of this.errorData) {
       // ST542 kodları kontrol et
-      if (error.st542_kodu && error.st542_kodu.trim() !== '') {
-        const st542Codes = error.st542_kodu.split('/');
+      if (error.st542_kodu && error.st542_kodu.trim() !== "") {
+        const st542Codes = error.st542_kodu.split("/");
         for (const code of st542Codes) {
           if (messageLower.includes(code.trim().toLowerCase())) {
             foundError = error;
@@ -1115,67 +1163,73 @@ class ChatbotWidgetWithProductVerification {
           }
         }
       }
-      
+
       // Carel kodları kontrol et
-      if (!foundError && error.carel_kodu && error.carel_kodu.trim() !== '') {
+      if (!foundError && error.carel_kodu && error.carel_kodu.trim() !== "") {
         if (messageLower.includes(error.carel_kodu.trim().toLowerCase())) {
           foundError = error;
         }
       }
-      
+
       if (foundError) break;
     }
-    
+
     if (!foundError) {
-      return 'Bu hata kodu hakkında bilgi bulunamadı. Lütfen hata kodunu kontrol edin.';
+      return "Bu hata kodu hakkında bilgi bulunamadı. Lütfen hata kodunu kontrol edin.";
     }
-    
+
     let response = `🔧 **Hata Kodu Bilgisi**\n\n`;
-    
-    if (foundError.st542_kodu && foundError.st542_kodu.trim() !== '') {
+
+    if (foundError.st542_kodu && foundError.st542_kodu.trim() !== "") {
       response += `**ST542 Kodu:** ${foundError.st542_kodu}\n`;
     }
-    if (foundError.carel_kodu && foundError.carel_kodu.trim() !== '') {
+    if (foundError.carel_kodu && foundError.carel_kodu.trim() !== "") {
       response += `**Carel Kodu:** ${foundError.carel_kodu}\n`;
     }
-    
+
     response += `**Açıklama:** ${foundError.aciklama}\n`;
     response += `**Sebep:** ${foundError.sebep}\n`;
-    
+
     if (foundError.yorum) {
       if (Array.isArray(foundError.yorum)) {
         response += `**Not:**\n`;
-        foundError.yorum.forEach(note => {
+        foundError.yorum.forEach((note) => {
           response += `• ${note}\n`;
         });
-      } else if (typeof foundError.yorum === 'string' && foundError.yorum.trim() !== '') {
+      } else if (
+        typeof foundError.yorum === "string" &&
+        foundError.yorum.trim() !== ""
+      ) {
         response += `**Not:** ${foundError.yorum}\n`;
       }
     }
-    
-    response += `\n💡 **Reset için:** "${foundError.st542_kodu || foundError.carel_kodu} reset" yazın`;
-    
+
+    response += `\n💡 **Reset için:** "${
+      foundError.st542_kodu || foundError.carel_kodu
+    } reset" yazın`;
+
     return response;
   }
 
   generateResetInstructions(machineType) {
-    if (!this.resetData) return 'Reset talimatları yüklenemedi.';
-    
+    if (!this.resetData) return "Reset talimatları yüklenemedi.";
+
     const instructions = this.resetData.reset_instructions[machineType];
-    if (!instructions) return 'Bu model için reset talimatı bulunamadı.';
-    
+    if (!instructions) return "Bu model için reset talimatı bulunamadı.";
+
     let response = `**${instructions.model_name} Reset Talimatları**\n\n`;
-    
+
     instructions.reset_steps.forEach((step, index) => {
       response += `**Adım ${step.step}: ${step.title}**\n`;
       response += `${step.description}\n`;
       if (step.note) {
         response += `💡 *${step.note}*\n`;
       }
-      response += '\n';
+      response += "\n";
     });
-    
-    response += '⚠️ **Önemli:** Reset işlemi sonrası cihazınızın normal çalıştığını kontrol edin.';
+
+    response +=
+      "⚠️ **Önemli:** Reset işlemi sonrası cihazınızın normal çalıştığını kontrol edin.";
     return response;
   }
 }

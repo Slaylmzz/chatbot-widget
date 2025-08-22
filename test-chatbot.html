@@ -1,207 +1,221 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Chatbot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f7fa;
-        }
-        .chat-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .chat-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .chat-messages {
-            height: 400px;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        .message {
-            margin-bottom: 15px;
-        }
-        .message.user .message-text {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            margin-left: 50px;
-        }
-        .message.bot .message-text {
-            background: #f8f9fa;
-            color: #333;
-            margin-right: 50px;
-            border: 1px solid #e9ecef;
-        }
-        .message-text {
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.6;
-            word-wrap: break-word;
-        }
-        .message-time {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: 5px;
-        }
-        .user .message-time {
-            text-align: right;
-        }
-        .chat-input-container {
-            padding: 20px;
-            border-top: 1px solid #eee;
-            display: flex;
-            gap: 10px;
-        }
-        .chat-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-        }
-        .send-btn {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-        }
-        .send-btn:hover {
-            opacity: 0.9;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f7fa;
+      }
+      .chat-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .chat-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .chat-messages {
+        height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      .message {
+        margin-bottom: 15px;
+      }
+      .message.user .message-text {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        margin-left: 50px;
+      }
+      .message.bot .message-text {
+        background: #f8f9fa;
+        color: #333;
+        margin-right: 50px;
+        border: 1px solid #e9ecef;
+      }
+      .message-text {
+        padding: 12px 16px;
+        border-radius: 18px;
+        line-height: 1.6;
+        word-wrap: break-word;
+      }
+      .message-time {
+        font-size: 0.75rem;
+        color: #999;
+        margin-top: 5px;
+      }
+      .user .message-time {
+        text-align: right;
+      }
+      .chat-input-container {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+      }
+      .chat-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        outline: none;
+      }
+      .send-btn {
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+      }
+      .send-btn:hover {
+        opacity: 0.9;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="chat-container">
-        <div class="chat-header">
-            <h2>🤖 Test Chatbot</h2>
-            <p>Basit test versiyonu</p>
+      <div class="chat-header">
+        <h2>🤖 Test Chatbot</h2>
+        <p>Basit test versiyonu</p>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+          <div class="message-text">
+            Merhaba! Test chatbot'una hoş geldiniz! 🎉<br /><br />
+            <strong>Test edebileceğiniz komutlar:</strong><br />
+            🔧 <strong>ER21</strong> - ST542 reset talimatı<br />
+            🔧 <strong>AL003</strong> - Carel reset talimatı<br />
+            ❓ <strong>antifriz</strong> - FAQ cevabı<br />
+            🛠️ <strong>reset</strong> - Reset seçenekleri<br />
+            💬 <strong>merhaba</strong> - Genel yanıt
+          </div>
+          <div class="message-time">10:32</div>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message bot">
-                <div class="message-text">
-                    Merhaba! Test chatbot'una hoş geldiniz! 🎉<br><br>
-                    <strong>Test edebileceğiniz komutlar:</strong><br>
-                    🔧 <strong>ER21</strong> - ST542 reset talimatı<br>
-                    🔧 <strong>AL003</strong> - Carel reset talimatı<br>
-                    ❓ <strong>antifriz</strong> - FAQ cevabı<br>
-                    🛠️ <strong>reset</strong> - Reset seçenekleri<br>
-                    💬 <strong>merhaba</strong> - Genel yanıt
-                </div>
-                <div class="message-time">10:32</div>
-            </div>
-        </div>
-        <div class="chat-input-container">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">Gönder</button>
-        </div>
+      </div>
+      <div class="chat-input-container">
+        <input
+          type="text"
+          id="chatInput"
+          class="chat-input"
+          placeholder="Mesajınızı yazın..."
+          onkeypress="if(event.key==='Enter') sendMessage()"
+        />
+        <button class="send-btn" onclick="sendMessage()">Gönder</button>
+      </div>
     </div>
 
     <script>
-        class TestChatbot {
-            constructor() {
-                this.chatMessages = document.getElementById('chatMessages');
-                this.chatInput = document.getElementById('chatInput');
-                
-                // Test data
-                this.faqData = {
-                    'antifriz': 'Antifriz, soğutma sisteminin donmasını önler. Düzenli olarak kontrol edilmeli ve gerektiğinde değiştirilmelidir.',
-                    'bypass': 'Bypass sistemi, debinin ayarlanmasında kullanılır. Doğru ayar için teknik servise başvurun.',
-                    'bakım': 'Periyodik bakım çok önemlidir. Yılda en az 2 kez profesyonel bakım yaptırın.'
-                };
-                
-                this.resetInstructions = {
-                    'st542': '**ST542 Reset Talimatları**\n\n**Adım 1:** Cihazı kapatın\n**Adım 2:** SET + UP butonlarını 5 saniye basılı tutun\n**Adım 3:** DOWN ile onaylayın\n\n⚠️ Reset sonrası ayarları kontrol edin.',
-                    'carel': '**Carel Reset Talimatları**\n\n**Adım 1:** MENU butonuna 3 saniye basın\n**Adım 2:** rSt parametresini bulun\n**Adım 3:** YES olarak ayarlayın\n\n⚠️ Reset sonrası cihaz yeniden başlar.'
-                };
-                
-                this.errorCodes = {
-                    'er21': 'st542',
-                    'er01': 'st542', 
-                    'er02': 'st542',
-                    'al003': 'carel',
-                    'al032': 'carel',
-                    'al30': 'carel'
-                };
-            }
-            
-            addMessage(message, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}`;
-                
-                const formattedMessage = message
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n/g, '<br>')
-                    .replace(/🔧/g, '<span style="color: #667eea;">🔧</span>')
-                    .replace(/❓/g, '<span style="color: #f093fb;">❓</span>')
-                    .replace(/🛠️/g, '<span style="color: #4facfe;">🛠️</span>')
-                    .replace(/⚠️/g, '<span style="color: #f5576c;">⚠️</span>');
-                
-                messageDiv.innerHTML = `
+      class TestChatbot {
+        constructor() {
+          this.chatMessages = document.getElementById("chatMessages");
+          this.chatInput = document.getElementById("chatInput");
+
+          // Test data
+          this.faqData = {
+            antifriz:
+              "Antifriz, soğutma sisteminin donmasını önler. Düzenli olarak kontrol edilmeli ve gerektiğinde değiştirilmelidir.",
+            bypass:
+              "Bypass sistemi, debinin ayarlanmasında kullanılır. Doğru ayar için teknik servise başvurun.",
+            bakım:
+              "Periyodik bakım çok önemlidir. Yılda en az 2 kez profesyonel bakım yaptırın.",
+          };
+
+          this.resetInstructions = {
+            st542:
+              "**ST542 Reset Talimatları**\n\n**Adım 1:** Cihazı kapatın\n**Adım 2:** SET + UP butonlarını 5 saniye basılı tutun\n**Adım 3:** DOWN ile onaylayın\n\n⚠️ Reset sonrası ayarları kontrol edin.",
+            carel:
+              "**Carel Reset Talimatları**\n\n**Adım 1:** MENU butonuna 3 saniye basın\n**Adım 2:** rSt parametresini bulun\n**Adım 3:** YES olarak ayarlayın\n\n⚠️ Reset sonrası cihaz yeniden başlar.",
+          };
+
+          this.errorCodes = {
+            er21: "st542",
+            er01: "st542",
+            er02: "st542",
+            al003: "carel",
+            al032: "carel",
+            al30: "carel",
+          };
+        }
+
+        addMessage(message, sender) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${sender}`;
+
+          const formattedMessage = message
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\n/g, "<br>")
+            .replace(/🔧/g, '<span style="color: #667eea;">🔧</span>')
+            .replace(/❓/g, '<span style="color: #f093fb;">❓</span>')
+            .replace(/🛠️/g, '<span style="color: #4facfe;">🛠️</span>')
+            .replace(/⚠️/g, '<span style="color: #f5576c;">⚠️</span>');
+
+          messageDiv.innerHTML = `
                     <div class="message-text">${formattedMessage}</div>
-                    <div class="message-time">${new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString(
+                      "tr-TR",
+                      { hour: "2-digit", minute: "2-digit" }
+                    )}</div>
                 `;
-                
-                this.chatMessages.appendChild(messageDiv);
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-            }
-            
-            processMessage(message) {
-                const lowerMessage = message.toLowerCase();
-                
-                // Hata kodu kontrolü
-                for (const [code, type] of Object.entries(this.errorCodes)) {
-                    if (lowerMessage.includes(code)) {
-                        return this.resetInstructions[type];
-                    }
-                }
-                
-                // FAQ kontrolü
-                for (const [keyword, answer] of Object.entries(this.faqData)) {
-                    if (lowerMessage.includes(keyword)) {
-                        return `**${keyword.toUpperCase()} Hakkında**\n\n${answer}`;
-                    }
-                }
-                
-                // Reset kontrolü
-                if (lowerMessage.includes('reset')) {
-                    return 'Reset işlemi için cihaz modelini belirtin:\n\n🔹 **ST542** için: "ER21" veya "ST542"\n🔹 **Carel** için: "AL003" veya "Carel"';
-                }
-                
-                // Genel yanıt
-                return `Merhaba! Size nasıl yardımcı olabilirim?\n\n🔧 **Hata kodları:** ER21, AL003 gibi\n❓ **Genel sorular:** antifriz, bypass, bakım\n🛠️ **Reset:** "reset" yazın`;
-            }
+
+          this.chatMessages.appendChild(messageDiv);
+          this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
         }
-        
-        const chatbot = new TestChatbot();
-        
-        function sendMessage() {
-            const message = chatbot.chatInput.value.trim();
-            if (!message) return;
-            
-            // Kullanıcı mesajını ekle
-            chatbot.addMessage(message, 'user');
-            chatbot.chatInput.value = '';
-            
-            // Bot yanıtını oluştur ve ekle
-            setTimeout(() => {
-                const response = chatbot.processMessage(message);
-                chatbot.addMessage(response, 'bot');
-            }, 500);
+
+        processMessage(message) {
+          const lowerMessage = message.toLowerCase();
+
+          // Hata kodu kontrolü
+          for (const [code, type] of Object.entries(this.errorCodes)) {
+            if (lowerMessage.includes(code)) {
+              return this.resetInstructions[type];
+            }
+          }
+
+          // FAQ kontrolü
+          for (const [keyword, answer] of Object.entries(this.faqData)) {
+            if (lowerMessage.includes(keyword)) {
+              return `**${keyword.toUpperCase()} Hakkında**\n\n${answer}`;
+            }
+          }
+
+          // Reset kontrolü
+          if (lowerMessage.includes("reset")) {
+            return 'Reset işlemi için cihaz modelini belirtin:\n\n🔹 **ST542** için: "ER21" veya "ST542"\n🔹 **Carel** için: "AL003" veya "Carel"';
+          }
+
+          // Genel yanıt
+          return `Merhaba! Size nasıl yardımcı olabilirim?\n\n🔧 **Hata kodları:** ER21, AL003 gibi\n❓ **Genel sorular:** antifriz, bypass, bakım\n🛠️ **Reset:** "reset" yazın`;
         }
+      }
+
+      const chatbot = new TestChatbot();
+
+      function sendMessage() {
+        const message = chatbot.chatInput.value.trim();
+        if (!message) return;
+
+        // Kullanıcı mesajını ekle
+        chatbot.addMessage(message, "user");
+        chatbot.chatInput.value = "";
+
+        // Bot yanıtını oluştur ve ekle
+        setTimeout(() => {
+          const response = chatbot.processMessage(message);
+          chatbot.addMessage(response, "bot");
+        }, 500);
+      }
     </script>
-</body>
+  </body>
 </html>

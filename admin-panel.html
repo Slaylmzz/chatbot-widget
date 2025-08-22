@@ -1,266 +1,283 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eraco Chatbot Admin Panel</title>
-    <link rel="stylesheet" href="admin-panel.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin-panel.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
-        <div class="login-container">
-            <div class="login-header">
-                <i class="fas fa-shield-alt"></i>
-                <h2>Admin Panel Girişi</h2>
-            </div>
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label for="username">Kullanıcı Adı:</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Şifre:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
-                </button>
-                <div id="loginError" class="error-message" style="display: none;"></div>
-            </form>
+      <div class="login-container">
+        <div class="login-header">
+          <i class="fas fa-shield-alt"></i>
+          <h2>Admin Panel Girişi</h2>
         </div>
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="username">Kullanıcı Adı:</label>
+            <input type="text" id="username" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Şifre:</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit" class="login-btn">
+            <i class="fas fa-sign-in-alt"></i> Giriş Yap
+          </button>
+          <div
+            id="loginError"
+            class="error-message"
+            style="display: none"
+          ></div>
+        </form>
+      </div>
     </div>
 
-    <div class="admin-container" id="adminPanel" style="display: none;">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">
-                <h2><i class="fas fa-robot"></i> Eraco Admin</h2>
+    <div class="admin-container" id="adminPanel" style="display: none">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="logo">
+          <h2><i class="fas fa-robot"></i> Eraco Admin</h2>
+        </div>
+        <nav class="nav-menu">
+          <a href="#dashboard" class="nav-item active" data-section="dashboard">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </a>
+          <a href="#users" class="nav-item" data-section="users">
+            <i class="fas fa-users"></i> Kullanıcılar
+          </a>
+          <a href="#chats" class="nav-item" data-section="chats">
+            <i class="fas fa-comments"></i> Sohbetler
+          </a>
+          <a href="#analytics" class="nav-item" data-section="analytics">
+            <i class="fas fa-chart-pie"></i> Analitik
+          </a>
+          <a
+            href="#service-requests"
+            class="nav-item"
+            data-section="service-requests"
+          >
+            <i class="fas fa-tools"></i> Servis Talepleri
+          </a>
+          <a href="#settings" class="nav-item" data-section="settings">
+            <i class="fas fa-cog"></i> Ayarlar
+          </a>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+          <div class="header-left">
+            <h1 id="page-title">Dashboard</h1>
+          </div>
+          <div class="header-right">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Arama..." id="search-input" />
             </div>
-            <nav class="nav-menu">
-                <a href="#dashboard" class="nav-item active" data-section="dashboard">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-                <a href="#users" class="nav-item" data-section="users">
-                    <i class="fas fa-users"></i> Kullanıcılar
-                </a>
-                <a href="#chats" class="nav-item" data-section="chats">
-                    <i class="fas fa-comments"></i> Sohbetler
-                </a>
-                <a href="#analytics" class="nav-item" data-section="analytics">
-                    <i class="fas fa-chart-pie"></i> Analitik
-                </a>
-                <a href="#service-requests" class="nav-item" data-section="service-requests">
-                    <i class="fas fa-tools"></i> Servis Talepleri
-                </a>
-                <a href="#settings" class="nav-item" data-section="settings">
-                    <i class="fas fa-cog"></i> Ayarlar
-                </a>
-            </nav>
-        </div>
+            <div class="user-menu">
+              <i class="fas fa-user-circle"></i>
+              <span>Admin</span>
+            </div>
+          </div>
+        </header>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <h1 id="page-title">Dashboard</h1>
-                </div>
-                <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Arama..." id="search-input">
-                    </div>
-                    <div class="user-menu">
-                        <i class="fas fa-user-circle"></i>
-                        <span>Admin</span>
-                    </div>
-                </div>
-            </header>
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="total-users">0</h3>
+                <p>Toplam Kullanıcı</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-comments"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="total-messages">0</h3>
+                <p>Toplam Mesaj</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-tools"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="service-requests-count">0</h3>
+                <p>Servis Talepleri</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="today-users">0</h3>
+                <p>Bugün Aktif</p>
+              </div>
+            </div>
+          </div>
 
-            <!-- Dashboard Section -->
-            <section id="dashboard" class="content-section active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="total-users">0</h3>
-                            <p>Toplam Kullanıcı</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="total-messages">0</h3>
-                            <p>Toplam Mesaj</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-tools"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="service-requests-count">0</h3>
-                            <p>Servis Talepleri</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="today-users">0</h3>
-                            <p>Bugün Aktif</p>
-                        </div>
-                    </div>
-                </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h3>Günlük Kullanıcı Aktivitesi</h3>
+              <canvas id="daily-activity-chart"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3>Sık Sorulan Konular</h3>
+              <canvas id="topics-chart"></canvas>
+            </div>
+          </div>
 
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3>Günlük Kullanıcı Aktivitesi</h3>
-                        <canvas id="daily-activity-chart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Sık Sorulan Konular</h3>
-                        <canvas id="topics-chart"></canvas>
-                    </div>
-                </div>
+          <div class="recent-activity">
+            <h3>Son Aktiviteler</h3>
+            <div class="activity-list" id="recent-activity-list">
+              <!-- Dinamik olarak doldurulacak -->
+            </div>
+          </div>
+        </section>
 
-                <div class="recent-activity">
-                    <h3>Son Aktiviteler</h3>
-                    <div class="activity-list" id="recent-activity-list">
-                        <!-- Dinamik olarak doldurulacak -->
-                    </div>
-                </div>
-            </section>
+        <!-- Users Section -->
+        <section id="users" class="content-section">
+          <div class="section-header">
+            <h2>Kullanıcı Yönetimi</h2>
+            <div class="filters">
+              <select id="user-filter">
+                <option value="all">Tüm Kullanıcılar</option>
+                <option value="verified">Doğrulanmış</option>
+                <option value="unverified">Doğrulanmamış</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kullanıcı ID</th>
+                  <th>E-posta</th>
+                  <th>E-posta Doğrulama</th>
+                  <th>Ürün Doğrulama</th>
+                  <th>Kayıt Tarihi</th>
+                  <th>Son Aktivite</th>
+                  <th>Konum</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- Dinamik olarak doldurulacak -->
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-            <!-- Users Section -->
-            <section id="users" class="content-section">
-                <div class="section-header">
-                    <h2>Kullanıcı Yönetimi</h2>
-                    <div class="filters">
-                        <select id="user-filter">
-                            <option value="all">Tüm Kullanıcılar</option>
-                            <option value="verified">Doğrulanmış</option>
-                            <option value="unverified">Doğrulanmamış</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Kullanıcı ID</th>
-                                <th>E-posta</th>
-                                <th>E-posta Doğrulama</th>
-                                <th>Ürün Doğrulama</th>
-                                <th>Kayıt Tarihi</th>
-                                <th>Son Aktivite</th>
-                                <th>Konum</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table-body">
-                            <!-- Dinamik olarak doldurulacak -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <!-- Chats Section -->
+        <section id="chats" class="content-section">
+          <div class="section-header">
+            <h2>Sohbet Geçmişi</h2>
+            <div class="filters">
+              <input type="date" id="date-filter" />
+              <select id="chat-filter">
+                <option value="all">Tüm Sohbetler</option>
+                <option value="today">Bugün</option>
+                <option value="week">Bu Hafta</option>
+              </select>
+            </div>
+          </div>
+          <div class="chat-list" id="chat-list">
+            <!-- Dinamik olarak doldurulacak -->
+          </div>
+        </section>
 
-            <!-- Chats Section -->
-            <section id="chats" class="content-section">
-                <div class="section-header">
-                    <h2>Sohbet Geçmişi</h2>
-                    <div class="filters">
-                        <input type="date" id="date-filter">
-                        <select id="chat-filter">
-                            <option value="all">Tüm Sohbetler</option>
-                            <option value="today">Bugün</option>
-                            <option value="week">Bu Hafta</option>
-                        </select>
-                    </div>
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+          <div class="analytics-grid">
+            <div class="chart-card full-width">
+              <h3>Kullanıcı Konumları</h3>
+              <div id="location-map" style="height: 400px">
+                <div class="location-list" id="location-list">
+                  <!-- Konum listesi buraya gelecek -->
                 </div>
-                <div class="chat-list" id="chat-list">
-                    <!-- Dinamik olarak doldurulacak -->
-                </div>
-            </section>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3>En Çok Sorulan Sorular</h3>
+              <div class="question-stats" id="question-stats">
+                <!-- Soru istatistikleri -->
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3>Hata Kodu Dağılımı</h3>
+              <canvas id="error-codes-chart"></canvas>
+            </div>
+          </div>
+        </section>
 
-            <!-- Analytics Section -->
-            <section id="analytics" class="content-section">
-                <div class="analytics-grid">
-                    <div class="chart-card full-width">
-                        <h3>Kullanıcı Konumları</h3>
-                        <div id="location-map" style="height: 400px;">
-                            <div class="location-list" id="location-list">
-                                <!-- Konum listesi buraya gelecek -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>En Çok Sorulan Sorular</h3>
-                        <div class="question-stats" id="question-stats">
-                            <!-- Soru istatistikleri -->
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Hata Kodu Dağılımı</h3>
-                        <canvas id="error-codes-chart"></canvas>
-                    </div>
-                </div>
-            </section>
+        <!-- Service Requests Section -->
+        <section id="service-requests" class="content-section">
+          <div class="section-header">
+            <h2>Teknik Servis Talepleri</h2>
+            <div class="filters">
+              <select id="status-filter">
+                <option value="all">Tüm Talepler</option>
+                <option value="pending">Beklemede</option>
+                <option value="completed">Tamamlandı</option>
+              </select>
+            </div>
+          </div>
+          <div class="service-requests-grid" id="service-requests-grid">
+            <!-- Servis talepleri buraya gelecek -->
+          </div>
+        </section>
 
-            <!-- Service Requests Section -->
-            <section id="service-requests" class="content-section">
-                <div class="section-header">
-                    <h2>Teknik Servis Talepleri</h2>
-                    <div class="filters">
-                        <select id="status-filter">
-                            <option value="all">Tüm Talepler</option>
-                            <option value="pending">Beklemede</option>
-                            <option value="completed">Tamamlandı</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="service-requests-grid" id="service-requests-grid">
-                    <!-- Servis talepleri buraya gelecek -->
-                </div>
-            </section>
-
-            <!-- Settings Section -->
-            <section id="settings" class="content-section">
-                <div class="settings-grid">
-                    <div class="settings-card">
-                        <h3>Genel Ayarlar</h3>
-                        <div class="setting-item">
-                            <label>Otomatik Yenileme</label>
-                            <input type="checkbox" id="auto-refresh" checked>
-                        </div>
-                        <div class="setting-item">
-                            <label>Yenileme Sıklığı (saniye)</label>
-                            <input type="number" id="refresh-interval" value="30" min="10" max="300">
-                        </div>
-                    </div>
-                    <div class="settings-card">
-                        <h3>Bildirim Ayarları</h3>
-                        <div class="setting-item">
-                            <label>Yeni Kullanıcı Bildirimi</label>
-                            <input type="checkbox" id="new-user-notification" checked>
-                        </div>
-                        <div class="setting-item">
-                            <label>Servis Talebi Bildirimi</label>
-                            <input type="checkbox" id="service-notification" checked>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
+        <!-- Settings Section -->
+        <section id="settings" class="content-section">
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>Genel Ayarlar</h3>
+              <div class="setting-item">
+                <label>Otomatik Yenileme</label>
+                <input type="checkbox" id="auto-refresh" checked />
+              </div>
+              <div class="setting-item">
+                <label>Yenileme Sıklığı (saniye)</label>
+                <input
+                  type="number"
+                  id="refresh-interval"
+                  value="30"
+                  min="10"
+                  max="300"
+                />
+              </div>
+            </div>
+            <div class="settings-card">
+              <h3>Bildirim Ayarları</h3>
+              <div class="setting-item">
+                <label>Yeni Kullanıcı Bildirimi</label>
+                <input type="checkbox" id="new-user-notification" checked />
+              </div>
+              <div class="setting-item">
+                <label>Servis Talebi Bildirimi</label>
+                <input type="checkbox" id="service-notification" checked />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
 
     <script src="admin-panel.js"></script>
-</body>
+  </body>
 </html>

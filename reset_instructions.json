@@ -3,7 +3,16 @@
     "st542": {
       "model_name": "Eliwell ST 542",
       "keywords": ["st542", "st 542", "eliwell", "st-542"],
-      "error_codes": ["ER00", "ER01", "ER02", "ER21", "ER22", "ER03", "ER04", "ER05"],
+      "error_codes": [
+        "ER00",
+        "ER01",
+        "ER02",
+        "ER21",
+        "ER22",
+        "ER03",
+        "ER04",
+        "ER05"
+      ],
       "reset_steps": [
         {
           "step": 1,
@@ -35,9 +44,25 @@
       ]
     },
     "carel": {
-      "model_name": "Carel Kontrol Ünitesi", 
-      "keywords": ["carel", "karel", "carel kontrol", "dokunmatik", "touchscreen", "touch", "ekran"],
-      "error_codes": ["AL003", "AL032", "AL30", "AL31", "AL001", "AL002", "AL004"],
+      "model_name": "Carel Kontrol Ünitesi",
+      "keywords": [
+        "carel",
+        "karel",
+        "carel kontrol",
+        "dokunmatik",
+        "touchscreen",
+        "touch",
+        "ekran"
+      ],
+      "error_codes": [
+        "AL003",
+        "AL032",
+        "AL30",
+        "AL31",
+        "AL001",
+        "AL002",
+        "AL004"
+      ],
       "reset_steps": [
         {
           "step": 1,
